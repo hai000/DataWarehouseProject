@@ -60,5 +60,23 @@ public class Connections {
         }
         return stagingJDBI;
     }
+    public static Jdbi getdwJDBI(){
+
+        try {
+            loadFileConfig();
+            if(dwJDBI == null ){
+                JSONObject jsonControl = fileConfig.getJSONObject("data_warehouse");
+//        System.out.println(jsonControl.getString("ip"));
+                String dbConnect = String.format("jdbc:mysql://%s:%s/%s", jsonControl.getString("ip"),
+                        jsonControl.getInt("port"), jsonControl.getString("dbname"));
+                dwJDBI = Jdbi.create(dbConnect, jsonControl.getString("username"),
+                        jsonControl.getString("password"));
+                dwJDBI.installPlugin(new SqlObjectPlugin());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return dwJDBI;
+    }
 
 }

@@ -11,7 +11,7 @@ import org.jdbi.v3.core.Jdbi;
 import java.util.List;
 
 public class LoadFileToDB {
-    public void loadData() {
+    public static void loadData() {
         Jdbi control = Connections.getControlJDBI();
         Jdbi staging = Connections.getStagingJDBI();
         DataSourceInterface dataSourceInterface = control.onDemand(DataSourceInterface.class);

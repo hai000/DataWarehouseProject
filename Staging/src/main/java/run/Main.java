@@ -14,9 +14,11 @@ public class Main {
 //    LoadFileToDB loadFileToDB = new LoadFileToDB();
 //    loadFileToDB.loadData();
 //        new DMXCrawler().crawlData();
-       CrawlProcess.crawlDMX();
-       CrawlProcess.crawlNK();
-
+        CrawlProcess.crawlDMX();
+        CrawlProcess.crawlNK();
+        LoadFileToDB.loadData();
+        LoadStagingToDW.loadDMXData();
+        LoadStagingToDW.loadNKData();
 
     }
 }
