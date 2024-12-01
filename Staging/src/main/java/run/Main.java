@@ -12,9 +12,6 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-//    LoadFileToDB loadFileToDB = new LoadFileToDB();
-//    loadFileToDB.loadData();
-//        new DMXCrawler().crawlData();
         CrawlProcess.crawlDMX();
         CrawlProcess.crawlNK();
         LoadFileToDB.loadData();
