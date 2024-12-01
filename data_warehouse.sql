@@ -75,7 +75,7 @@ INSERT INTO data_tivi (
     itemGift,
     crawlDate,
     source_id
-)
+)data_tividate_dimension
 SELECT 
     id,
     name,

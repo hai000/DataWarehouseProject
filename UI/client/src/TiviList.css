@@ -3,19 +3,24 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Thêm bóng cho bảng */
+    border-radius: 10px; /* Bo góc cho bảng */
+    overflow: hidden; /* Ẩn các phần tử bị tràn */
 }
 
 .tivi-table th,
 .tivi-table td {
-    padding: 8px 12px;
+    padding: 10px 15px; /* Tăng kích thước padding */
     text-align: left;
     border: 1px solid #ddd;
-    font-size: 14px; /* Giảm kích thước font */
+    font-size: 14px;
 }
 
 .tivi-table th {
     background-color: #f4f4f4;
     font-weight: bold;
+    color: #333;
+    text-transform: uppercase;
 }
 
 .tivi-table td {
@@ -26,6 +31,10 @@
     background-color: #f9f9f9;
 }
 
+.tivi-table tr:hover {
+    background-color: #f1f1f1; /* Hiệu ứng hover cho dòng */
+}
+
 .loading, .error {
     font-size: 16px;
     color: #333;
@@ -33,36 +42,7 @@
     text-align: center;
 }
 
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.page {
-    margin: 0 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.active {
-    background-color: #007bff;
-    color: white;
-}
-
-.previous, .next {
-    padding: 5px 10px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.previous:hover, .next:hover {
-    background-color: #f0f0f0;
-}
-/* CSS cho container phân trang */
+/* Cải thiện giao diện phân trang */
 .pagination {
     display: flex;
     justify-content: center;
@@ -78,25 +58,37 @@
 
 .pagination a, .pagination span {
     display: inline-block;
-    padding: 8px 16px;
+    padding: 10px 16px;
     border: 1px solid #ddd;
     color: #333;
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 25px; /* Bo tròn các góc */
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-/* Hiệu ứng hover */
+/* Hiệu ứng hover cho các trang */
 .pagination a:hover, .pagination span:hover {
     background-color: #007bff;
     color: white;
+    transform: scale(1.1); /* Tăng kích thước khi hover */
 }
 
 /* Nút "Trước" và "Sau" */
 .pagination .previous, .pagination .next {
     font-weight: bold;
+    background-color: #f4f4f4;
+    padding: 10px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.pagination .previous:hover, .pagination .next:hover {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.1); /* Tăng kích thước khi hover */
 }
 
 /* Hiệu ứng khi trang đang được chọn */
@@ -108,7 +100,7 @@
 
 /* Định dạng các dấu ba chấm */
 .pagination .break {
-    padding: 8px 16px;
+    padding: 10px 16px;
     color: #333;
 }
 
@@ -129,13 +121,13 @@
 
 /* Định dạng ô input tìm kiếm */
 .search-input {
-    padding: 10px;
+    padding: 12px 16px; /* Thêm padding cho ô tìm kiếm */
     font-size: 16px;
     width: 300px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 25px; /* Bo góc cho ô input */
     outline: none;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Khi hover vào ô input, thay đổi border */
@@ -143,5 +135,35 @@
     border-color: #888;
 }
 
+/* Khi ô input được focus */
+.search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4); /* Thêm hiệu ứng đổ bóng */
+}
 
+/* Định dạng cho các button của ô tìm kiếm */
+.search-container button {
+    padding: 10px 15px;
+    margin-left: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
+/* Hiệu ứng khi hover vào nút tìm kiếm */
+.search-container button:hover {
+    background-color: #0056b3;
+}
+
+/* Cải thiện kiểu dáng các dòng dữ liệu */
+.tivi-table tr:nth-child(even) td {
+    background-color: #fafafa; /* Màu nền nhẹ cho các dòng chẵn */
+}
+
+/* Thêm hiệu ứng hover cho các ô cột */
+.tivi-table td:hover {
+    background-color: #f1f1f1; /* Thêm hiệu ứng cho các ô khi hover */
+}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './ProductStatsPage.css'; // Đảm bảo bạn đã import CSS
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, LabelList, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, LabelList, Cell,LineChart,Line } from 'recharts';
 
 
 const ProductStatsPage = () => {
@@ -50,12 +50,21 @@ const ProductStatsPage = () => {
         { name: 'Giá thấp nhất', price: lowestPrice },
         { name: 'Giá cao nhất', price: highestPrice }
     ];
-    // Xử lý chuyển đổi kiểu biểu đồ
+// Xử lý chuyển đổi kiểu biểu đồ
     const toggleChartType = () => {
         // Xóa màu đã tạo khi chuyển đổi biểu đồ
         generatedColors.length = 0;  // Xóa tất cả màu trong mảng
-        setChartType(chartType === 'bar' ? 'pie' : 'bar');  // Chuyển kiểu biểu đồ
+
+        // Chuyển kiểu biểu đồ: từ cột -> hình tròn -> đường -> cột
+        if (chartType === 'bar') {
+            setChartType('pie'); // Nếu đang ở dạng cột, chuyển sang hình tròn
+        } else if (chartType === 'pie') {
+            setChartType('line'); // Nếu đang ở dạng hình tròn, chuyển sang đường
+        } else {
+            setChartType('bar'); // Nếu đang ở dạng đường, chuyển sang cột
+        }
     };
+
 // Mảng lưu trữ các màu đã được tạo ra
     const generatedColors = [];
 
@@ -122,7 +131,7 @@ const ProductStatsPage = () => {
             {/* Nút chuyển đổi kiểu biểu đồ (chỉ hiển thị khi showChart = true) */}
             {showChart && (
                 <button onClick={toggleChartType}>
-                    Chuyển sang biểu đồ {chartType === 'bar' ? 'Hình Tròn' : 'Cột'}
+                    Chuyển sang biểu đồ {chartType === 'bar' ? 'Hình Tròn' : chartType === 'line' ? 'Cột' : 'Đường'}
                 </button>
             )}
 
@@ -145,6 +154,15 @@ const ProductStatsPage = () => {
                                         <LabelList dataKey="count" position="top" />
                                     </Bar>
                                 </BarChart>
+                            ) : chartType === 'line' ? (
+                                <LineChart data={priceRanges}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="range" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="count" stroke="#8884d8" />
+                                </LineChart>
                             ) : (
                                 <PieChart>
                                     <Pie
@@ -169,8 +187,8 @@ const ProductStatsPage = () => {
                                         align="right"
                                         formatter={(value, entry, index) => (
                                             <span style={{ color: entry.payload.fill }}>
-                                    {value}
-                                </span>
+                  {value}
+                </span>
                                         )}
                                     />
                                 </PieChart>
@@ -193,6 +211,15 @@ const ProductStatsPage = () => {
                                         <LabelList dataKey="count" position="top" />
                                     </Bar>
                                 </BarChart>
+                            ) : chartType === 'line' ? (
+                                <LineChart data={manufacturerStats}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="count" stroke="#82ca9d" />
+                                </LineChart>
                             ) : (
                                 <PieChart>
                                     <Pie
@@ -209,7 +236,7 @@ const ProductStatsPage = () => {
                                             <Cell key={`cell-${index}`} fill={getRandomColor()} />
                                         ))}
                                     </Pie>
-                                    {/* Thêm Legend để hiển thị chú thích cho biểu đồ hãng */}
+                                    {/* Thêm Legend để hiển thị chú thích */}
                                     <Legend
                                         iconType="circle"
                                         layout="vertical"
@@ -217,8 +244,8 @@ const ProductStatsPage = () => {
                                         align="right"
                                         formatter={(value, entry, index) => (
                                             <span style={{ color: entry.payload.fill }}>
-                                    {value}
-                                </span>
+                  {value}
+                </span>
                                         )}
                                     />
                                 </PieChart>
@@ -241,6 +268,15 @@ const ProductStatsPage = () => {
                                         <LabelList dataKey="price" position="top" />
                                     </Bar>
                                 </BarChart>
+                            ) : chartType === 'line' ? (
+                                <LineChart data={priceData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="price" stroke="#ff7300" />
+                                </LineChart>
                             ) : (
                                 <PieChart>
                                     <Pie
@@ -257,7 +293,7 @@ const ProductStatsPage = () => {
                                             <Cell key={`cell-${index}`} fill={getRandomColor()} />
                                         ))}
                                     </Pie>
-                                    {/* Thêm Legend để hiển thị chú thích cho biểu đồ giá */}
+                                    {/* Thêm Legend để hiển thị chú thích */}
                                     <Legend
                                         iconType="circle"
                                         layout="vertical"
@@ -265,8 +301,8 @@ const ProductStatsPage = () => {
                                         align="right"
                                         formatter={(value, entry, index) => (
                                             <span style={{ color: entry.payload.fill }}>
-                                    {value}
-                                </span>
+                  {value}
+                </span>
                                         )}
                                     />
                                 </PieChart>
@@ -276,6 +312,7 @@ const ProductStatsPage = () => {
 
                 </div>
             )}
+
 
         </div>
     );

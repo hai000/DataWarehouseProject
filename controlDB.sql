@@ -7738,7 +7738,7 @@ CREATE TABLE IF NOT EXISTS `file_log` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `config_id` bigint(20) NOT NULL,
   `status` varchar(10) NOT NULL DEFAULT '0',
-  `createdAt` date NOT NULL DEFAULT curdate(),
+  `createdAt` date NOT NULL ,
   `file_data` varchar(255) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `FK__file_config` (`config_id`),
