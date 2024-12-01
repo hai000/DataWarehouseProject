@@ -15,9 +15,8 @@ public class Main {
 //    LoadFileToDB loadFileToDB = new LoadFileToDB();
 //    loadFileToDB.loadData();
 //        new DMXCrawler().crawlData();
-//        StagingDB.loadFromFileToTable("D:/Program/DataWarehouseProject/Staging/data/DMX/DMXdata_2024-11-05.csv", "stg_dmx_data");
-//        CrawlProcess.crawlDMX();
-//        CrawlProcess.crawlNK();
+        CrawlProcess.crawlDMX();
+        CrawlProcess.crawlNK();
         LoadFileToDB.loadData();
         LoadStagingToDW.loadDMXData();
         LoadStagingToDW.loadNKData();
