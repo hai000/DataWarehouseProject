@@ -18,6 +18,7 @@ public class CrawlProcess {
     }
 
     public static void crawlData(String source){
+        Connections.loadFileConfig();
         Jdbi controlJDBi = Connections.getControlJDBI();
         FileLogInterface fileLogInterface = controlJDBi.onDemand(FileLogInterface.class);
         FileLog fileLog = fileLogInterface.getTodayLogBySource(source);

@@ -7,7 +7,7 @@ public interface StagingDBInterface {
     @SqlUpdate("delete from :table")
     void deleteData(@Bind("table") String table);
     @SqlUpdate("LOAD DATA INFILE :fileLocation " +
-            "INTO TABLE " +"stg_nk_data "+
+            "INTO TABLE :tableName "+
             "FIELDS TERMINATED BY ',' " +
             "ENCLOSED BY '\"' " +
             "LINES TERMINATED BY '\\n' " +

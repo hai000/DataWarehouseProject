@@ -5,6 +5,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/Staging/pom.xml" />
+        <option value="$PROJECT_DIR$/DW/pom.xml" />
       </list>
     </option>
   </component>

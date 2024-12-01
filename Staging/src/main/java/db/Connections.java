@@ -12,7 +12,7 @@ public class Connections {
     public static void loadFileConfig(){
         try{
             if(fileConfig ==null){
-                BufferedReader br = new BufferedReader(new FileReader(new File("Staging/config.json")));
+                BufferedReader br = new BufferedReader(new FileReader(new File("./config.json")));
                 String fileContent="";
                 String in;
                 while((in = br.readLine())!= null){
@@ -79,4 +79,8 @@ public class Connections {
         return dwJDBI;
     }
 
+    public static void main(String[] args) {
+        loadFileConfig();
+        System.out.println(fileConfig.getJSONObject("data_warehouse"));
+    }
 }

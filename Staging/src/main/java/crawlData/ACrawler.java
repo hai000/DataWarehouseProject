@@ -78,8 +78,8 @@ public abstract class ACrawler<T> {
         return "\"" + value + "\""; // Bao quanh giá trị bằng dấu nháy kép
     }
     public void loadConfig(String source) {
-        DataSource nk = Connections.getControlJDBI().onDemand(DataSourceInterface.class).getDataSource(source);
-        this.mainUrl = nk.getAddress();
-        this.fileLocation = nk.getFile_location();
+        DataSource dataSource = Connections.getControlJDBI().onDemand(DataSourceInterface.class).getDataSource(source);
+        this.mainUrl = dataSource.getAddress();
+        this.fileLocation = dataSource.getFile_location();
     }
 }

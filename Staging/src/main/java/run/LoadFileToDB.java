@@ -24,6 +24,7 @@ public class LoadFileToDB {
                 continue;
             } else {
                 fileLog = fileLogInterface.getBySourceAndStatus(source.getId(), "ES");
+//                System.out.println(fileLog);
                 StagingDB.deleteData(source.getStaging_table());
                 int status = StagingDB.loadFromFileToTable(fileLog.getFile_data(), source.getStaging_table());
                 if (status > 0) {
