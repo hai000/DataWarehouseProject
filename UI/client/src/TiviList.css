@@ -1,0 +1,147 @@
+/* TiviList.css */
+.tivi-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tivi-table th,
+.tivi-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-size: 14px; /* Giảm kích thước font */
+}
+
+.tivi-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.tivi-table td {
+    background-color: #fff;
+}
+
+.tivi-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.loading, .error {
+    font-size: 16px;
+    color: #333;
+    padding: 20px;
+    text-align: center;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.page {
+    margin: 0 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.previous, .next {
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.previous:hover, .next:hover {
+    background-color: #f0f0f0;
+}
+/* CSS cho container phân trang */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    color: #333;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hiệu ứng hover */
+.pagination a:hover, .pagination span:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Nút "Trước" và "Sau" */
+.pagination .previous, .pagination .next {
+    font-weight: bold;
+}
+
+/* Hiệu ứng khi trang đang được chọn */
+.pagination .active a {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Định dạng các dấu ba chấm */
+.pagination .break {
+    padding: 8px 16px;
+    color: #333;
+}
+
+/* Sửa kiểu cho các trang bị vô hiệu hóa */
+.pagination .disabled a, .pagination .disabled span {
+    cursor: not-allowed;
+    background-color: #f0f0f0;
+    color: #ccc;
+}
+
+/* Định dạng chung cho ô tìm kiếm */
+.search-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Định dạng ô input tìm kiếm */
+.search-input {
+    padding: 10px;
+    font-size: 16px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+/* Khi hover vào ô input, thay đổi border */
+.search-input:hover {
+    border-color: #888;
+}
+
+
+

@@ -1,0 +1,78 @@
+/* Tổng thể giao diện */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Đảm bảo trang luôn chiếm toàn bộ chiều cao màn hình */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tạo không gian cho trang với màu nền nhẹ */
+body {
+  background-color: #f4f7fc;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Đặt tên class cho nav để dễ dàng nhận diện */
+.app__nav {
+  background-color: #333;
+  padding: 15px 0;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Đặt tên lớp cho danh sách liên kết */
+.app__nav-list {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 0;
+}
+
+/* Liên kết */
+.app__nav-list li {
+  font-size: 18px;
+}
+
+.app__nav-list li a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+/* Màu sắc khi hover vào link */
+.app__nav-list li a:hover {
+  background-color: #007bff;
+}
+
+/* Thêm khoảng cách cho phần nội dung dưới nav */
+.app__content {
+  margin-top: 80px; /* Khoảng cách cho nội dung tránh bị che khuất bởi nav */
+  padding: 20px;
+  width: 100%;
+}
+
+/* Các thẻ h1 trong các trang */
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
