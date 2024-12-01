@@ -21,8 +21,8 @@ public abstract class ACrawler<T> {
     public abstract String sendRequest(String urlString) throws Exception;
     public abstract T getProductDetail(T product) throws Exception;
     public abstract void addProducts(List<T> products, Document doc) throws Exception;
-    public String exportProductsToCsv(List<T> products, String source, String location) {
-        String filename = String.format("%s/%sdata_%s.csv", location, source, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+    public String exportProductsToCsv(List<T> products, DataSource dataSource) {
+        String filename = String.format(dataSource.getFile_name_format(), dataSource.getFile_location(), new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         File file = new File(filename);
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
             // Ghi tiêu đề từ tên biến
@@ -77,9 +77,10 @@ public abstract class ACrawler<T> {
         value = value.replace("\"", "\"\""); // Thay thế dấu nháy kép bằng hai dấu nháy kép
         return "\"" + value + "\""; // Bao quanh giá trị bằng dấu nháy kép
     }
-    public void loadConfig(String source) {
+    public DataSource loadConfig(String source) {
         DataSource dataSource = Connections.getControlJDBI().onDemand(DataSourceInterface.class).getDataSource(source);
         this.mainUrl = dataSource.getAddress();
         this.fileLocation = dataSource.getFile_location();
+        return dataSource;
     }
 }

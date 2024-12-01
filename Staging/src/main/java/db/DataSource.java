@@ -8,14 +8,16 @@ public class DataSource {
     private String address;
     private String file_location;
     private String staging_table;
+    private String file_name_format;
     private Date createdAt;
 
-    public DataSource(long id, String name, String address, String file_location, String staging_table, Date createdAt) {
+    public DataSource(long id, String name, String address, String file_location, String staging_table, String file_name_format, Date createdAt) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.file_location = file_location;
         this.staging_table = staging_table;
+        this.file_name_format = file_name_format;
         this.createdAt = createdAt;
     }
 
@@ -70,6 +72,14 @@ public class DataSource {
         this.createdAt = createdAt;
     }
 
+    public String getFile_name_format() {
+        return file_name_format;
+    }
+
+    public void setFile_name_format(String file_name_format) {
+        this.file_name_format = file_name_format;
+    }
+
     @Override
     public String toString() {
         return "DataSource{" +
@@ -77,6 +87,8 @@ public class DataSource {
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 ", file_location='" + file_location + '\'' +
+                ", staging_table='" + staging_table + '\'' +
+                ", file_name_format='" + file_name_format + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }

@@ -1,5 +1,6 @@
 package crawlData;
 
+import db.DataSource;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -24,7 +25,7 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
     }
 
     public String crawlData() {
-        loadConfig("dmx_tivi");
+        DataSource dataSource = loadConfig("dmx_tivi");
         String category = "tivi";
         if (mainUrl == null) {
             System.out.println("Vui lòng thiết lập URL");
@@ -62,7 +63,7 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                 }
 
                 System.out.println("Tổng số sản phẩm crawl: " + products.size());
-                return exportProductsToCsv(products, "DMX", fileLocation);
+                return exportProductsToCsv(products, dataSource);
 
             } catch (Exception e) {
 
