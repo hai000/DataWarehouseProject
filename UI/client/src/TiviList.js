@@ -66,6 +66,7 @@ const TiviList = () => {
         setCurrentPage(event.selected + 1);
     };
 
+
     return (
         <div className="table-container">
             {/* Tiêu đề "Danh sách Tivi" */}
@@ -78,7 +79,7 @@ const TiviList = () => {
                     className="search-input"
                     placeholder="Tìm kiếm sản phẩm..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}  // Lọc dữ liệu khi người dùng gõ
+                    onChange={handleSearch}  // Chỉnh sửa gọi hàm handleSearch
                 />
             </div>
 
