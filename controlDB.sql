@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `date_dimension` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table control.date_dimension: ~7,671 rows (approximately)
+-- Dumping data for table control.date_dimension: ~7,712 rows (approximately)
 INSERT INTO `date_dimension` (`id`, `full_date`, `day_since_2005`, `month_since_2005`, `day_of_week`, `calendar_month`, `calendar_year`, `calendar_year_month`, `day_of_month`, `day_of_year`, `week_of_year_sunday`, `year_week_sunday`, `week_sunday_start`, `week_of_year_monday`, `year_week_monday`, `week_monday_start`, `holiday`, `day_type`) VALUES
 	(1, '2005-01-01', 1, 1, 'Saturday', 'January', 2005, '2005-Jan', 1, 1, 52, '2004-W52', '2004-12-26', 53, '2004-W53', '2004-12-27', 'Non-Holiday', 'Weekend'),
 	(2, '2005-01-02', 2, 1, 'Sunday', 'January', 2005, '2005-Jan', 2, 2, 1, '2005-W01', '2005-01-02', 53, '2004-W53', '2004-12-27', 'Non-Holiday', 'Weekend'),
@@ -7724,14 +7724,15 @@ CREATE TABLE IF NOT EXISTS `file_config` (
   `address` varchar(255) NOT NULL DEFAULT '',
   `file_location` varchar(255) NOT NULL DEFAULT '',
   `staging_table` varchar(255) NOT NULL DEFAULT '',
+  `file_name_format` varchar(255) NOT NULL DEFAULT '',
   `createdAt` date NOT NULL DEFAULT curdate(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table control.file_config: ~2 rows (approximately)
-INSERT INTO `file_config` (`id`, `name`, `address`, `file_location`, `staging_table`, `createdAt`) VALUES
-	(1, 'dmx_tivi', 'https://www.dienmayxanh.com', 'Staging/data/DMX', 'stg_dmx_data', '2024-10-29'),
-	(2, 'nk_tivi', 'https://www.nguyenkim.com', 'Staging/data/NK', 'stg_nk_data', '2024-10-29');
+INSERT INTO `file_config` (`id`, `name`, `address`, `file_location`, `staging_table`, `file_name_format`, `createdAt`) VALUES
+	(1, 'dmx_tivi', 'https://www.dienmayxanh.com', 'Staging/data/DMX', 'stg_dmx_data', '%s/DMXdata_%s.csv', '2024-10-29'),
+	(2, 'nk_tivi', 'https://www.nguyenkim.com', 'Staging/data/NK', 'stg_nk_data', '%s/NKdata_%s.csv', '2024-10-29');
 
 -- Dumping structure for table control.file_log
 CREATE TABLE IF NOT EXISTS `file_log` (
@@ -7743,12 +7744,14 @@ CREATE TABLE IF NOT EXISTS `file_log` (
   PRIMARY KEY (`id`),
   KEY `FK__file_config` (`config_id`),
   CONSTRAINT `FK__file_config` FOREIGN KEY (`config_id`) REFERENCES `file_config` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table control.file_log: ~2 rows (approximately)
+-- Dumping data for table control.file_log: ~4 rows (approximately)
 INSERT INTO `file_log` (`id`, `config_id`, `status`, `createdAt`, `file_data`) VALUES
-	(11, 1, 'ES', '2024-11-03', 'D:/Program/DataWarehouseProject/Staging/data/DMX/DMXdata_2024-11-03.csv'),
-	(12, 2, 'ES', '2024-11-03', 'D:/Program/DataWarehouseProject/Staging/data/NK/NKdata_2024-11-03.csv');
+	(13, 1, 'LS', '2024-11-05', 'D:/Program/DataWarehouseProject/Staging/data/DMX/DMXdata_2024-11-05.csv'),
+	(14, 2, 'LS', '2024-11-05', 'D:/Program/DataWarehouseProject/Staging/data/NK/NKdata_2024-11-05.csv'),
+	(17, 1, 'ES', '2024-12-01', 'D:/Program/DataWarehouseProject/Staging/data/DMX/DMXdata_2024-12-01.csv'),
+	(18, 2, 'ES', '2024-12-01', 'D:/Program/DataWarehouseProject/Staging/data/NK/NKdata_2024-12-01.csv');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

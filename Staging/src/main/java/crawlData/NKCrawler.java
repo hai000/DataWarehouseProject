@@ -1,5 +1,6 @@
 package crawlData;
 
+import db.DataSource;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,7 +26,7 @@ public class NKCrawler extends ACrawler<NKProduct>{
     }
 
     public String crawlData() {
-        loadConfig("nk_tivi");
+        DataSource dataSource =loadConfig("nk_tivi");
         String category = "tivi";
         try {
             int page = 1;
@@ -54,7 +55,7 @@ public class NKCrawler extends ACrawler<NKProduct>{
             }
 
             System.out.println("Tổng số sản phẩm crawl: " + products.size());
-            return exportProductsToCsv(products, "NK", fileLocation);
+            return exportProductsToCsv(products, dataSource);
 
         } catch (Exception e) {
             e.printStackTrace();
