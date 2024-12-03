@@ -280,3 +280,12 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+/* CSS for truncating long text */
+.chart-section .recharts-legend-item text,
+.chart-section .recharts-xAxis text {
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden;    /* Hides overflow */
+    text-overflow: ellipsis; /* Adds the ellipsis (...) */
+    max-width: 120px;    /* You can adjust this value */
+}
+
