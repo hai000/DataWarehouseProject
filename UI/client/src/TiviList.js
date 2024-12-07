@@ -89,6 +89,7 @@ const TiviList = () => {
                 <tr>
                     <th>Product ID</th>
                     <th>Name</th>
+                    <th>Image</th>
                     <th>Price</th>
                     <th>Old Price</th>
                     <th>Discount Percent</th>
@@ -117,6 +118,7 @@ const TiviList = () => {
                     <th>Voice Search</th>
                     <th>Crawl Date</th>
                     <th>Source ID</th>
+
                 </tr>
                 </thead>
                 <tbody>
@@ -124,6 +126,8 @@ const TiviList = () => {
                     <tr key={tivi.product_id}>
                         <td>{tivi.product_id}</td>
                         <td>{tivi.name}</td>
+                        <td><img src={tivi.imgLink} alt={tivi.name}
+                                 style={{width: '100px', height: 'auto'}}/></td>
                         <td>{tivi.price}</td>
                         <td>{tivi.oldPrice}</td>
                         <td>{tivi.discountPercent}</td>
@@ -152,10 +156,12 @@ const TiviList = () => {
                         <td>{tivi.voiceSearch}</td>
                         <td>{tivi.crawlDate}</td>
                         <td>{tivi.sourceId}</td>
+
                     </tr>
                 ))}
                 </tbody>
             </table>
+
 
             {/* Phân trang */}
             <ReactPaginate

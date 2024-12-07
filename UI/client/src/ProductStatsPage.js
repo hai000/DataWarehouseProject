@@ -23,6 +23,20 @@ const ProductStatsPage = () => {
     const [error, setError] = useState(null);
     const [chartType, setChartType] = useState('bar');
     const [showChart, setShowChart] = useState(false);
+    const apiEndpoints = [
+        { endpoint: 'total', key: 'total' },
+        { endpoint: 'tivi-type', key: 'tiviType' },
+        { endpoint: 'screen-size', key: 'screenSize' },
+        { endpoint: 'image-technology', key: 'imageTechnology' },
+        { endpoint: 'price-range', key: 'priceRange' },
+        { endpoint: 'release-year', key: 'releaseYear' },
+        { endpoint: 'warranty-period', key: 'warrantyPeriod' },
+        { endpoint: 'sound-technology', key: 'soundTechnology' },
+        { endpoint: 'average-price', key: 'averagePrice', dataField: 'average_price' },
+        { endpoint: 'manufacturer', key: 'manufacturer' },
+        { endpoint: 'highest-price', key: 'highestPrice', dataField: 'highest_price' },
+        { endpoint: 'lowest-price', key: 'lowestPrice', dataField: 'lowest_price' },
+    ];
 
     // Lấy dữ liệu từ API khi component được mount
     useEffect(() => {
