@@ -1,469 +1,573 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './ProductStatsPage.css'; // Đảm bảo bạn đã import CSS
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, LabelList, Cell, LineChart, Line } from 'recharts';
+import './ProductStatsPage.css';
+import { Bar, Line, Pie } from 'react-chartjs-2';  // Thêm import cho biểu đồ đường và tròn
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
+
+// Đăng ký các thành phần của Chart.js
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,  // Đăng ký thành phần cho biểu đồ tròn
+    LineElement,  // Đăng ký thành phần cho biểu đồ đường
+    PointElement  // Đăng ký thành phần cho các điểm trong biểu đồ đường
+);
 
 const ProductStatsPage = () => {
-    const [stats, setStats] = useState({
-        total: 0,
-        tiviType: [],
-        screenSize: [],
-        imageTechnology: [],
-        priceRange: [],
-        releaseYear: [],
-        warrantyPeriod: [],
-        soundTechnology: [],
-        averagePrice: 0,
-        manufacturer: [],
-        highestPrice: 0, // Thêm biến highestPrice
-        lowestPrice: 0  // Thêm biến lowestPrice
-    });
+    const [audioTechData, setAudioTechData] = useState([]);
+    const [avgPriceData, setAvgPriceData] = useState([]);
+    const [manufacturerCountData, setManufacturerCountData] = useState([]);
+    const [imageTechData, setImageTechData] = useState([]);
+    const [priceSummaryData, setPriceSummaryData] = useState([]);
+    const [error, setError] = useState('');
+    const [showChart, setShowChart] = useState(false); // Trạng thái cho việc hiển thị biểu đồ
+    const [chartType, setChartType] = useState('bar');  // Trạng thái để lưu loại biểu đồ (bar, line, pie)
+    const [totalCount, setTotalCount] = useState([]);  // Khai báo state cho dữ liệu mới
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [chartType, setChartType] = useState('bar');
-    const [showChart, setShowChart] = useState(false);
-    const apiEndpoints = [
-        { endpoint: 'total', key: 'total' },
-        { endpoint: 'tivi-type', key: 'tiviType' },
-        { endpoint: 'screen-size', key: 'screenSize' },
-        { endpoint: 'image-technology', key: 'imageTechnology' },
-        { endpoint: 'price-range', key: 'priceRange' },
-        { endpoint: 'release-year', key: 'releaseYear' },
-        { endpoint: 'warranty-period', key: 'warrantyPeriod' },
-        { endpoint: 'sound-technology', key: 'soundTechnology' },
-        { endpoint: 'average-price', key: 'averagePrice', dataField: 'average_price' },
-        { endpoint: 'manufacturer', key: 'manufacturer' },
-        { endpoint: 'highest-price', key: 'highestPrice', dataField: 'highest_price' },
-        { endpoint: 'lowest-price', key: 'lowestPrice', dataField: 'lowest_price' },
-    ];
+    const fetchData = async () => {
+        try {
+            const audioTechResponse = await axios.get('http://localhost:5000/api/audio-tech');
+            setAudioTechData(audioTechResponse.data);
 
-    // Lấy dữ liệu từ API khi component được mount
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const [
-                    totalRes,
-                    tiviTypeRes,
-                    screenSizeRes,
-                    imageTechnologyRes,
-                    priceRangeRes,
-                    releaseYearRes,
-                    warrantyPeriodRes,
-                    soundTechnologyRes,
-                    averagePriceRes,
-                    manufacturerRes, // Thêm phần gọi API thống kê nhãn hiệu
-                    highestPriceRes, // Thêm phần gọi API thống kê giá cao nhất
-                    lowestPriceRes   // Thêm phần gọi API thống kê giá thấp nhất
-                ] = await Promise.all([
-                    axios.get('http://localhost:5000/api/stats/total'),
-                    axios.get('http://localhost:5000/api/stats/tivi-type'),
-                    axios.get('http://localhost:5000/api/stats/screen-size'),
-                    axios.get('http://localhost:5000/api/stats/image-technology'),
-                    axios.get('http://localhost:5000/api/stats/price-range'),
-                    axios.get('http://localhost:5000/api/stats/release-year'),
-                    axios.get('http://localhost:5000/api/stats/warranty-period'),
-                    axios.get('http://localhost:5000/api/stats/sound-technology'),
-                    axios.get('http://localhost:5000/api/stats/average-price'),
-                    axios.get('http://localhost:5000/api/stats/manufacturer'),
-                    axios.get('http://localhost:5000/api/stats/highest-price'), // Gọi API thống kê giá cao nhất
-                    axios.get('http://localhost:5000/api/stats/lowest-price')  // Gọi API thống kê giá thấp nhất
-                ]);
+            const avgPriceResponse = await axios.get('http://localhost:5000/api/avg-price');
+            setAvgPriceData(avgPriceResponse.data);
 
-                setStats({
-                    total: totalRes.data.total,
-                    tiviType: tiviTypeRes.data,
-                    screenSize: screenSizeRes.data,
-                    imageTechnology: imageTechnologyRes.data,
-                    priceRange: priceRangeRes.data,
-                    releaseYear: releaseYearRes.data,
-                    warrantyPeriod: warrantyPeriodRes.data,
-                    soundTechnology: soundTechnologyRes.data,
-                    averagePrice: averagePriceRes.data.average_price,
-                    manufacturer: manufacturerRes.data,
-                    highestPrice: highestPriceRes.data.highest_price, // Lưu giá cao nhất
-                    lowestPrice: lowestPriceRes.data.lowest_price   // Lưu giá thấp nhất
-                });
-                setLoading(false);
-            } catch (err) {
-                setError('Không thể tải dữ liệu thống kê');
-                setLoading(false);
-            }
-        };
+            const manufacturerCountResponse = await axios.get('http://localhost:5000/api/manufacturer-count');
+            setManufacturerCountData(manufacturerCountResponse.data);
 
-        fetchStats();
-    }, []);
+            const imageTechResponse = await axios.get('http://localhost:5000/api/image-tech');
+            setImageTechData(imageTechResponse.data);
 
-    // Xử lý chuyển đổi kiểu biểu đồ
-    const toggleChartType = () => {
-        setChartType(chartType === 'bar' ? 'pie' : chartType === 'pie' ? 'line' : 'bar');
+            const priceSummaryResponse = await axios.get('http://localhost:5000/api/price-summary');
+            setPriceSummaryData(priceSummaryResponse.data);
+            const totalCountResponse = await axios.get('http://localhost:5000/api/total-count');  // API mới
+            setTotalCount(totalCountResponse.data);
+        } catch (err) {
+            console.error("API Error:", err);
+            setError('Đã xảy ra lỗi khi lấy dữ liệu.');
+        }
     };
 
-    // Mảng lưu trữ các màu đã được tạo ra
-    const generatedColors = [];
+    useEffect(() => {
+        fetchData();
+    }, []);
 
+    // Hàm sinh màu ngẫu nhiên
     const getRandomColor = () => {
-        const letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        return `rgba(${r}, ${g}, ${b}, 0.6)`;
+    };
 
-        // Kiểm tra nếu màu này đã tồn tại, nếu có thì tạo màu khác
-        while (generatedColors.includes(color)) {
-            color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-        }
+    // Hàm chuyển đổi dữ liệu cho biểu đồ cột (Số lượng sản phẩm theo công nghệ âm thanh)
+    const getAudioTechChartData = () => {
+        return {
+            labels: audioTechData.map((item) => item.tech_audio_name === 'NULL' ? 'Không Có Tên' : item.tech_audio_name),
+            datasets: [
+                {
+                    label: 'Số Lượng Sản Phẩm',
+                    data: audioTechData.map((item) => item.product_count),
+                    backgroundColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                }
+            ]
+        };
+    };
 
-        // Lưu màu vào mảng để đảm bảo không trùng lặp
-        generatedColors.push(color);
+    // Hàm chuyển đổi dữ liệu cho biểu đồ đường (Số lượng sản phẩm theo công nghệ âm thanh)
+    const getAudioTechLineData = () => {
+        return {
+            labels: audioTechData.map((item) => item.tech_audio_name === 'NULL' ? 'Không Có Tên' : item.tech_audio_name),
+            datasets: [
+                {
+                    label: 'Số Lượng Sản Phẩm',
+                    data: audioTechData.map((item) => item.product_count),
+                    fill: false,
+                    borderColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    tension: 0.1
+                }
+            ]
+        };
+    };
 
-        return color;
+    // Hàm chuyển đổi dữ liệu cho biểu đồ tròn (Số lượng sản phẩm theo công nghệ âm thanh)
+    const getAudioTechPieData = () => {
+        return {
+            labels: audioTechData.map((item) => item.tech_audio_name === 'NULL' ? 'Không Có Tên' : item.tech_audio_name),
+            datasets: [
+                {
+                    data: audioTechData.map((item) => item.product_count),
+                    backgroundColor: audioTechData.map(() => getRandomColor()),  // Sử dụng màu ngẫu nhiên cho từng phần
+                }
+            ]
+        };
+    };
+
+    // Hàm chuyển đổi dữ liệu cho biểu đồ cột (Số lượng sản phẩm theo nhà sản xuất)
+    const getManufacturerCountChartData = () => {
+        return {
+            labels: manufacturerCountData.map((item) => item.manufacturer_name),
+            datasets: [
+                {
+                    label: 'Số Lượng Sản Phẩm',
+                    data: manufacturerCountData.map((item) => item.product_count),
+                    backgroundColor: manufacturerCountData.map(() => getRandomColor()),  // Áp dụng màu ngẫu nhiên cho từng phần
+                    borderColor: manufacturerCountData.map(() => getRandomColor()),  // Áp dụng màu ngẫu nhiên cho từng phần
+                    borderWidth: 1
+                }
+            ]
+        };
+    };
+
+    // Hàm chuyển đổi dữ liệu cho biểu đồ cột (Giá cao nhất, thấp nhất, trung bình)
+    const getPriceSummaryChartData = () => {
+        return {
+            labels: priceSummaryData.map((item) => `Tóm Tắt ${item.price_summary_id}`),
+            datasets: [
+                {
+                    label: 'Giá Cao Nhất',
+                    data: priceSummaryData.map((item) => item.highest_price),
+                    backgroundColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                },
+                {
+                    label: 'Giá Thấp Nhất',
+                    data: priceSummaryData.map((item) => item.lowest_price),
+                    backgroundColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                },
+                {
+                    label: 'Giá Trung Bình',
+                    data: avgPriceData.map((item) => item.average_price),
+                    backgroundColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                }
+            ]
+        };
+    };
+
+    // Hàm chuyển đổi dữ liệu cho biểu đồ cột (Số lượng sản phẩm theo công nghệ hình ảnh)
+    const getImageTechChartData = () => {
+        return {
+            labels: imageTechData.map((item) => item.tech_image_name === 'NULL' ? 'Không Có Tên' : item.tech_image_name),
+            datasets: [
+                {
+                    label: 'Số Lượng Sản Phẩm',
+                    data: imageTechData.map((item) => item.product_count),
+                    backgroundColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                }
+            ]
+        };
+    };
+
+    // Hàm chuyển đổi dữ liệu cho biểu đồ đường (Số lượng sản phẩm theo công nghệ hình ảnh)
+    const getImageTechLineData = () => {
+        return {
+            labels: imageTechData.map((item) => item.tech_image_name === 'NULL' ? 'Không Có Tên' : item.tech_image_name),
+            datasets: [
+                {
+                    label: 'Số Lượng Sản Phẩm',
+                    data: imageTechData.map((item) => item.product_count),
+                    fill: false,
+                    borderColor: getRandomColor(),  // Sử dụng màu ngẫu nhiên
+                    tension: 0.1
+                }
+            ]
+        };
+    };
+
+    // Hàm chuyển đổi dữ liệu cho biểu đồ tròn (Số lượng sản phẩm theo công nghệ hình ảnh)
+    const getImageTechPieData = () => {
+        return {
+            labels: imageTechData.map((item) => item.tech_image_name === 'NULL' ? 'Không Có Tên' : item.tech_image_name),
+            datasets: [
+                {
+                    data: imageTechData.map((item) => item.product_count),
+                    backgroundColor: imageTechData.map(() => getRandomColor()),  // Sử dụng màu ngẫu nhiên cho từng phần
+                }
+            ]
+        };
     };
 
     return (
-        <div className="container">
-            <h1>Thống Kê Sản Phẩm</h1>
+        <div>
+            <h1>Thông Tin Sản Phẩm</h1>
+            {error && <div style={{ color: 'red' }}>{error}</div>}
 
-            {loading ? (
-                <p>Đang tải dữ liệu...</p>
-            ) : error ? (
-                <p>{error}</p>
-            ) : (
-                <>
-                    <div className="stats">
-                        <h3>Thống Kê Tổng Số Sản Phẩm</h3>
-                        <p>Tổng số sản phẩm: {stats.total}</p>
+            {/* Nút để hiển thị biểu đồ */}
+            <button onClick={() => setShowChart(!showChart)}>
+                {showChart ? 'Ẩn Biểu Đồ' : 'Hiển Thị Biểu Đồ'}
+            </button>
 
-                        <h3>Thống Kê Theo Loại Sản Phẩm</h3>
-                        <ul>
-                            {stats.tiviType.map((item, index) => (
-                                <li key={index}>{item.tiviType}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Kích Thước Màn Hình</h3>
-                        <ul>
-                            {stats.screenSize.map((item, index) => (
-                                <li key={index}>{item.screenSize}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Công Nghệ Hình Ảnh</h3>
-                        <ul>
-                            {stats.imageTechnology.map((item, index) => (
-                                <li key={index}>{item.imageTechnology}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Phân Khúc Giá</h3>
-                        <ul>
-                            {stats.priceRange.map((item, index) => (
-                                <li key={index}>{item.priceRange}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Năm Phát Hành</h3>
-                        <ul>
-                            {stats.releaseYear.map((item, index) => (
-                                <li key={index}>{item.releaseYear}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Thời Gian Bảo Hành</h3>
-                        <ul>
-                            {stats.warrantyPeriod.map((item, index) => (
-                                <li key={index}>{item.warrantyPeriod} năm: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Công Nghệ Âm Thanh</h3>
-                        <ul>
-                            {stats.soundTechnology.map((item, index) => (
-                                <li key={index}>{item.soundTechnology}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <h3>Thống Kê Theo Nhãn Hiệu</h3>
-                        <ul>
-                            {stats.manufacturer.map((item, index) => (
-                                <li key={index}>{item.manufacturer}: {item.count} sản phẩm</li>
-                            ))}
-                        </ul>
-
-                        <div className="price-stats">
-                            <ul>
-                                <li><strong>Giá Trung Bình:</strong> {stats.averagePrice} VND</li>
-                                <li><strong>Giá Cao Nhất:</strong> {stats.highestPrice} VND</li>
-                                <li><strong>Giá Thấp Nhất:</strong> {stats.lowestPrice} VND</li>
-                            </ul>
-                        </div>
-
-                    </div>
-
-                    {/* Nút hiển thị biểu đồ */}
-                    <button className="button" onClick={() => setShowChart(!showChart)}>
-                        {showChart ? 'Ẩn Biểu Đồ' : 'Hiển Thị Biểu Đồ'}
-                    </button>
-
-                    {/* Nút chuyển đổi kiểu biểu đồ */}
-                    {showChart && (
-                        <button onClick={toggleChartType}>
-                            Chuyển sang biểu
-                            đồ {chartType === 'bar' ? 'Hình Tròn' : chartType === 'line' ? 'Cột' : 'Đường'}
-                        </button>
-                    )}
-                    {showChart && (
-                        <div className="charts">
-                            {/* Biểu đồ phân khúc giá */}
-                            <div className="chart-section">
-                                <h3>Biểu Đồ Phân Khúc Giá</h3>
-                                <ResponsiveContainer width="100%" height={400}>
-                                    {chartType === 'bar' ? (
-                                        <BarChart data={stats.priceRange}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="priceRange" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="count" fill="#8884d8">
-                                                <LabelList dataKey="count" position="top" />
-                                            </Bar>
-                                        </BarChart>
-                                    ) : chartType === 'line' ? (
-                                        <LineChart data={stats.priceRange}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="priceRange" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="count" stroke="#8884d8" />
-                                        </LineChart>
-                                    ) : (
-                                        <PieChart>
-                                            <Pie
-                                                data={stats.priceRange}
-                                                dataKey="count"
-                                                nameKey="priceRange"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={150}
-                                                label
-                                                isAnimationActive={false}
-                                            >
-                                                {stats.priceRange.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
-                                                ))}
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    )}
-                                </ResponsiveContainer>
-                            </div>
-
-                            {/* Biểu đồ giá thấp nhất, trung bình, cao nhất */}
-                            <div className="chart-section">
-                                <h3>Biểu Đồ Giá Thấp Nhất, Trung Bình, Cao Nhất</h3>
-                                <ResponsiveContainer width="100%" height={400}>
-                                    {chartType === 'bar' ? (
-                                        <BarChart data={[
-                                            { name: 'Giá Thấp Nhất', value: stats.lowestPrice },
-                                            { name: 'Giá Trung Bình', value: stats.averagePrice },
-                                            { name: 'Giá Cao Nhất', value: stats.highestPrice }
-                                        ]}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="name" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="value" fill="#8884d8">
-                                                <LabelList dataKey="value" position="top" />
-                                            </Bar>
-                                        </BarChart>
-                                    ) : chartType === 'line' ? (
-                                        <LineChart data={[
-                                            { name: 'Giá Thấp Nhất', value: stats.lowestPrice },
-                                            { name: 'Giá Trung Bình', value: stats.averagePrice },
-                                            { name: 'Giá Cao Nhất', value: stats.highestPrice }
-                                        ]}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="name" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="value" stroke="#8884d8" />
-                                        </LineChart>
-                                    ) : (
-                                        <PieChart>
-                                            <Pie
-                                                data={[
-                                                    { name: 'Giá Thấp Nhất', value: stats.lowestPrice },
-                                                    { name: 'Giá Trung Bình', value: stats.averagePrice },
-                                                    { name: 'Giá Cao Nhất', value: stats.highestPrice }
-                                                ]}
-                                                dataKey="value"
-                                                nameKey="name"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={150}
-                                                label
-                                                isAnimationActive={false}
-                                            >
-                                                <Cell key="low" fill="#ff7300" />
-                                                <Cell key="avg" fill="#8884d8" />
-                                                <Cell key="high" fill="#82ca9d" />
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    )}
-                                </ResponsiveContainer>
-                            </div>
-
-
-                            {/* Biểu đồ theo loại sản phẩm */}
-                            <div className="chart-section">
-                                <h3>Biểu Đồ Theo Loại Sản Phẩm</h3>
-                                <ResponsiveContainer width="100%" height={400}>
-                                    {chartType === 'bar' ? (
-                                        <BarChart data={stats.tiviType}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="tiviType" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="count" fill="#82ca9d">
-                                                <LabelList dataKey="count" position="top" />
-                                            </Bar>
-                                        </BarChart>
-                                    ) : chartType === 'line' ? (
-                                        <LineChart data={stats.tiviType}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="tiviType" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="count" stroke="#82ca9d" />
-                                        </LineChart>
-                                    ) : (
-                                        <PieChart>
-                                            <Pie
-                                                data={stats.tiviType}
-                                                dataKey="count"
-                                                nameKey="tiviType"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={150}
-                                                label
-                                                isAnimationActive={false}
-                                            >
-                                                {stats.tiviType.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
-                                                ))}
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    )}
-                                </ResponsiveContainer>
-                            </div>
-
-                            {/* Biểu đồ theo kích thước màn hình */}
-                            <div className="chart-section">
-                                <h3>Biểu Đồ Theo Kích Thước Màn Hình</h3>
-                                <ResponsiveContainer width="100%" height={400}>
-                                    {chartType === 'bar' ? (
-                                        <BarChart data={stats.screenSize}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="screenSize" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="count" fill="#ff7300">
-                                                <LabelList dataKey="count" position="top" />
-                                            </Bar>
-                                        </BarChart>
-                                    ) : chartType === 'line' ? (
-                                        <LineChart data={stats.screenSize}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="screenSize" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="count" stroke="#ff7300" />
-                                        </LineChart>
-                                    ) : (
-                                        <PieChart>
-                                            <Pie
-                                                data={stats.screenSize}
-                                                dataKey="count"
-                                                nameKey="screenSize"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={150}
-                                                label
-                                                isAnimationActive={false}
-                                            >
-                                                {stats.screenSize.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
-                                                ))}
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    )}
-                                </ResponsiveContainer>
-                            </div>
-
-                            {/* Biểu đồ theo nhãn hiệu */}
-                            <div className="chart-section">
-                                <h3>Biểu Đồ Theo Nhãn Hiệu</h3>
-                                <ResponsiveContainer width="100%" height={400}>
-                                    {chartType === 'bar' ? (
-                                        <BarChart data={stats.manufacturer}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="manufacturer" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="count" fill="#ff7300">
-                                                <LabelList dataKey="count" position="top" />
-                                            </Bar>
-                                        </BarChart>
-                                    ) : chartType === 'line' ? (
-                                        <LineChart data={stats.manufacturer}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="manufacturer" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="count" stroke="#ff7300" />
-                                        </LineChart>
-                                    ) : (
-                                        <PieChart>
-                                            <Pie
-                                                data={stats.manufacturer}
-                                                dataKey="count"
-                                                nameKey="manufacturer"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={150}
-                                                label
-                                                isAnimationActive={false}
-                                            >
-                                                {stats.manufacturer.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
-                                                ))}
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    )}
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    )}
-
-                </>
+            {/* Lựa chọn loại biểu đồ */}
+            {showChart && (
+                <div style={{ marginTop: '20px' }}>
+                    <label>Chọn Loại Biểu Đồ: </label>
+                    <select onChange={(e) => setChartType(e.target.value)} value={chartType}>
+                        <option value="bar">Biểu Đồ Cột</option>
+                        <option value="line">Biểu Đồ Đường</option>
+                        <option value="pie">Biểu Đồ Tròn</option>
+                    </select>
+                </div>
             )}
+
+            {/* Biểu đồ số lượng sản phẩm theo công nghệ âm thanh */}
+            {showChart && audioTechData.length > 0 && (
+                <section>
+                    <h2>Số Lượng Sản Phẩm Theo Công Nghệ Âm Thanh</h2>
+                    {chartType === 'bar' && (
+                        <Bar
+                            data={getAudioTechChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Công Nghệ Âm Thanh'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'line' && (
+                        <Line
+                            data={getAudioTechLineData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Công Nghệ Âm Thanh'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'pie' && (
+                        <Pie
+                            data={getAudioTechPieData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Công Nghệ Âm Thanh'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                </section>
+            )}
+
+            {/* Biểu đồ số lượng sản phẩm theo hãng */}
+            {showChart && manufacturerCountData.length > 0 && (
+                <section>
+                    <h2>Số Lượng Sản Phẩm Theo Nhà Sản Xuất</h2>
+                    {chartType === 'bar' && (
+                        <Bar
+                            data={getManufacturerCountChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Nhà Sản Xuất'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'line' && (
+                        <Line
+                            data={getManufacturerCountChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Nhà Sản Xuất'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'pie' && (
+                        <Pie
+                            data={getManufacturerCountChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sản Phẩm Theo Nhà Sản Xuất'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                </section>
+            )}
+
+            {/* Biểu đồ tóm tắt giá */}
+            {showChart && priceSummaryData.length > 0 && (
+                <section>
+                    <h2>Tóm Tắt Giá (Cao Nhất, Thấp Nhất, Trung Bình)</h2>
+                    {chartType === 'bar' && (
+                        <Bar
+                            data={getPriceSummaryChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Tóm Tắt Giá (Cao Nhất, Thấp Nhất, Trung Bình)'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'line' && (
+                        <Line
+                            data={getPriceSummaryChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Tóm Tắt Giá (Cao Nhất, Thấp Nhất, Trung Bình)'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                    {chartType === 'pie' && (
+                        <Pie
+                            data={getPriceSummaryChartData()}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Tóm Tắt Giá (Cao Nhất, Thấp Nhất, Trung Bình)'
+                                    }
+                                }
+                            }}
+                            width={400}  // Kích thước width nhỏ hơn
+                            height={200} // Kích thước height nhỏ hơn
+                        />
+                    )}
+                </section>
+            )}
+
+
+            {/* Các phần tóm tắt dữ liệu khác */}
+            {/* Bảng Tổng Số Lượng Sản Phẩm */}
+            <section>
+                <h2>Tổng Số Lượng Sản Phẩm</h2>
+                {totalCount.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Tổng số Lượng Sản Phẩm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {totalCount.map((item) => (
+                            <tr key={item.total_count_id}>
+                                <td>{item.total_product_count}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu giá trung bình.</p>
+                )}
+            </section>
+            {/* Bảng Giá Trung Bình */}
+            <section>
+                <h2>Giá Trung Bình</h2>
+                {avgPriceData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Giá Trung Bình</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {avgPriceData.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.average_price}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu giá trung bình.</p>
+                )}
+            </section>
+
+            {/* Dữ liệu Công Nghệ Âm Thanh */}
+            <section>
+                <h2>Tóm Tắt Công Nghệ Âm Thanh</h2>
+                {audioTechData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID Công Nghệ Âm Thanh</th>
+                            <th>Tên Công Nghệ Âm Thanh</th>
+                            <th>Số Lượng Sản Phẩm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {audioTechData.map((item) => (
+                            <tr key={item.tech_audio_id}>
+                                <td>{item.tech_audio_id}</td>
+                                <td>{item.tech_audio_name === 'NULL' ? 'Không Có Tên' : item.tech_audio_name}</td>
+                                <td>{item.product_count}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu công nghệ âm thanh.</p>
+                )}
+            </section>
+
+            {/* Dữ liệu Giá Trung Bình */}
+            <section>
+                <h2>Tóm Tắt Giá Trung Bình</h2>
+                {avgPriceData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Giá Trung Bình</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {avgPriceData.map((item) => (
+                            <tr>
+                                <td>{item.average_price}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu giá trung bình.</p>
+                )}
+            </section>
+
+            {/* Dữ liệu Số Lượng Theo Nhà Sản Xuất */}
+            <section>
+                <h2>Số Lượng Theo Nhà Sản Xuất</h2>
+                {manufacturerCountData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Nhà Sản Xuất</th>
+                            <th>Số Lượng Sản Phẩm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {manufacturerCountData.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.manufacturer_id}</td>
+                                <td>{item.manufacturer_name}</td>
+                                <td>{item.product_count}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu số lượng theo nhà sản xuất.</p>
+                )}
+            </section>
+
+            {/* Dữ liệu Công Nghệ Hình Ảnh */}
+            <section>
+                <h2>Tóm Tắt Công Nghệ Hình Ảnh</h2>
+                {imageTechData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Công Nghệ</th>
+                            <th>Số lượng sản phẩm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {imageTechData.map((item) => (
+                            <tr key={item.tech_image_id}>
+                                <td>{item.tech_image_id}</td>
+                                <td>{item.tech_image_name}</td>
+                                <td>{item.product_count}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu công nghệ hình ảnh.</p>
+                )}
+            </section>
+
+            {/* Dữ liệu Tóm Tắt Giá */}
+            <section>
+                <h2>Tóm Tắt Giá</h2>
+                {priceSummaryData.length > 0 ? (
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Giá Cao Nhất</th>
+                            <th>Tên Sản Phẩm Giá Cao Nhất</th>
+                            <th>Giá Thấp Nhất</th>
+                            <th>Tên Sản Phẩm Giá Thấp Nhất</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {priceSummaryData.map((item) => (
+                            <tr key={item.price_summary_id}>
+                                <td>{item.price_summary_id}</td>
+                                <td>{item.highest_price}</td>
+                                <td>{item.highest_price_product_name}</td>
+                                <td>{item.lowest_price}</td>
+                                <td>{item.lowest_price_product_name}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>Không có dữ liệu tóm tắt giá.</p>
+                )}
+            </section>
         </div>
     );
 };
