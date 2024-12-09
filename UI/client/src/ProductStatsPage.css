@@ -1,282 +1,163 @@
-/* Cấu trúc chung của trang */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f7f7f7;
+/* Global Styles */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f9;
     color: #333;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
 }
 
-/* Phần tiêu đề */
-h1 {
-    text-align: center;
-    font-size: 2.5rem;
+/* Headings */
+h1, h2 {
+    color: #3e4e56;
     font-weight: 600;
-    color: #333;
-    margin-top: 30px;
-    margin-bottom: 20px;
-    padding: 20px;
-    border-bottom: 3px solid #4CAF50;
 }
 
-/* Container chính */
+h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 40px;
+    font-size: 1.6rem;
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+/* Paragraphs */
+p {
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* Container for the entire page */
 .container {
+    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px;
 }
 
-/* Card chứa thông tin bảng và biểu đồ */
-.card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
-    padding: 20px;
-    transition: box-shadow 0.3s ease;
+/* Error message */
+.error-message {
+    color: red;
+    font-weight: bold;
+    font-size: 1.1rem;
 }
 
-.card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* Button */
-.button {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 1rem;
-    color: white;
-    background-color: #007BFF;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s, transform 0.2s ease;
-}
-
-.button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
-/* Thống kê */
-.stats {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.stats h3 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
-    color: #444;
-}
-
-.stats ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.stats li {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-    color: #555;
-}
-
-/* Biểu đồ */
-.charts {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-
-.recharts-responsive-container {
-    margin-top: 20px;
-}
-
-/* CSS cho các phần tử */
-.product-stats-page {
-    margin: 30px;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-}
-
-h1 {
-    text-align: center;
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-/* Phần thống kê */
-.stats {
-    margin-top: 20px;
-}
-
-.stats h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #444;
-}
-
-.stats ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.stats li {
-    margin: 5px 0;
-    font-size: 1rem;
-    color: #555;
-}
-
-/* Button */
+/* Button Styles */
 button {
-    padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    padding: 12px 20px;
     font-size: 1rem;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
     background-color: #45a049;
+    transform: scale(1.05); /* Adds a subtle hover effect */
 }
 
-/* Container cho các biểu đồ */
-.chart-container {
-    margin-top: 40px;
+button:active {
+    background-color: #388e3c; /* Darker green when button is pressed */
 }
 
-/* Cải thiện cho các biểu đồ */
-.chart-section {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
-}
-
-.chart-section:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* Responsive cho các biểu đồ */
-.chart-section h3 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #444;
-}
-
-.charts {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-@media (max-width: 768px) {
-    /* Điều chỉnh cho màn hình nhỏ */
-    .container {
-        padding: 20px;
-    }
-
-    .card {
-        padding: 15px;
-    }
-
-    .button {
-        width: 100%;
-        font-size: 1.2rem;
-    }
-
-    .charts {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Style cho các biểu đồ Pie */
-.PieChart .recharts-legend-wrapper {
+/* Select Dropdown */
+select {
+    padding: 8px;
     font-size: 1rem;
-    font-weight: 500;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    margin-top: 10px;
 }
 
-.PieChart .recharts-legend-item {
-    display: flex;
-    align-items: center;
-}
-
-.PieChart .recharts-legend-item span {
-    margin-left: 8px;
-}
-
-/* Tạo hiệu ứng cho phần nội dung */
-.card, .chart-section, .stats {
-    transition: transform 0.3s ease-in-out;
-}
-
-.card:hover, .chart-section:hover, .stats:hover {
-    transform: translateY(-5px);
-}
-/* Biểu đồ */
-.charts {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column; /* Xếp các biểu đồ theo chiều dọc */
-    gap: 30px;
-}
-
-/* Container cho các biểu đồ */
-.chart-container {
-    margin-top: 40px;
-}
-
-/* Cải thiện cho các biểu đồ */
-.chart-section {
-    background-color: #fff;
-    border-radius: 10px;
+/* Section Styling */
+section {
+    margin-top: 30px;
     padding: 20px;
+    background-color: white;
+    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
 }
 
-.chart-section:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #4CAF50;
 }
 
-.chart-section h3 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #444;
+section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-/* Responsive cho các biểu đồ */
+section table th,
+section table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 1rem;
+}
+
+section table th {
+    background-color: #f8f8f8;
+    color: #333;
+    font-weight: bold;
+}
+
+section table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Chart Container */
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.chart-container .chart {
+    width: 60%; /* Biểu đồ chiếm 60% chiều rộng */
+    max-width: 700px; /* Đặt kích thước tối đa */
+    height: 250px; /* Đặt chiều cao cho biểu đồ */
+    margin-bottom: 40px;
+}
+
+/* Make the page responsive */
 @media (max-width: 768px) {
-    /* Điều chỉnh cho màn hình nhỏ */
-    .container {
-        padding: 20px;
+    .chart-container .chart {
+        width: 80%; /* Biểu đồ chiếm 80% chiều rộng trên màn hình nhỏ */
+        height: 220px;
     }
+}
 
-    .card {
-        padding: 15px;
+@media (max-width: 480px) {
+    .chart-container .chart {
+        width: 90%; /* Biểu đồ chiếm 90% chiều rộng trên các màn hình điện thoại */
+        height: 180px;
     }
+}
 
-    .button {
-        width: 100%;
-        font-size: 1.2rem;
-    }
-
-    .charts {
-        grid-template-columns: 1fr;
-    }
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #3e4e56;
+    color: white;
+    font-size: 1rem;
 }

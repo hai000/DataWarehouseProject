@@ -8,7 +8,7 @@ const TiviList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(50); // Giới hạn 50 dòng mỗi trang
+    const [itemsPerPage] = useState(30); // Giới hạn 50 dòng mỗi trang
     const [searchTerm, setSearchTerm] = useState(''); // State cho tìm kiếm
     const [filteredTivis, setFilteredTivis] = useState([]); // State cho danh sách tivi đã lọc
 
@@ -35,6 +35,7 @@ const TiviList = () => {
         if (searchValue) {
             const filteredData = tivis.filter(tivi =>
                 tivi.name.toLowerCase().includes(searchValue.toLowerCase())
+
             );
             setFilteredTivis(filteredData);
         } else {
@@ -88,6 +89,7 @@ const TiviList = () => {
                 <tr>
                     <th>Product ID</th>
                     <th>Name</th>
+                    <th>Image</th>
                     <th>Price</th>
                     <th>Old Price</th>
                     <th>Discount Percent</th>
@@ -107,9 +109,16 @@ const TiviList = () => {
                     <th>Release Year</th>
                     <th>Screen Type</th>
                     <th>Audio Output Ports</th>
+                    <th>Warranty Period</th>
                     <th>Item Gift</th>
+                    <th>Tivi Type</th>
+                    <th>HDR</th>
+                    <th>Sound Technology</th>
+                    <th>Memory</th>
+                    <th>Voice Search</th>
                     <th>Crawl Date</th>
                     <th>Source ID</th>
+
                 </tr>
                 </thead>
                 <tbody>
@@ -117,6 +126,8 @@ const TiviList = () => {
                     <tr key={tivi.product_id}>
                         <td>{tivi.product_id}</td>
                         <td>{tivi.name}</td>
+                        <td><img src={tivi.imgLink} alt={tivi.name}
+                                 style={{width: '100px', height: 'auto'}}/></td>
                         <td>{tivi.price}</td>
                         <td>{tivi.oldPrice}</td>
                         <td>{tivi.discountPercent}</td>
@@ -136,13 +147,21 @@ const TiviList = () => {
                         <td>{tivi.releaseYear}</td>
                         <td>{tivi.screenType}</td>
                         <td>{tivi.audioOutputPorts}</td>
+                        <td>{tivi.warrantyPeriod}</td>
                         <td>{tivi.itemGift}</td>
+                        <td>{tivi.tiviType}</td>
+                        <td>{tivi.hdr}</td>
+                        <td>{tivi.soundTechnology}</td>
+                        <td>{tivi.memory}</td>
+                        <td>{tivi.voiceSearch}</td>
                         <td>{tivi.crawlDate}</td>
                         <td>{tivi.sourceId}</td>
+
                     </tr>
                 ))}
                 </tbody>
             </table>
+
 
             {/* Phân trang */}
             <ReactPaginate
