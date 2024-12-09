@@ -8,15 +8,17 @@ public class DataSource {
     private String address;
     private String file_location;
     private String staging_table;
+    private String dw_procedure;
     private String file_name_format;
     private Date createdAt;
 
-    public DataSource(long id, String name, String address, String file_location, String staging_table, String file_name_format, Date createdAt) {
+    public DataSource(long id, String name, String address, String file_location, String staging_table, String dw_procedure, String file_name_format, Date createdAt) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.file_location = file_location;
         this.staging_table = staging_table;
+        this.dw_procedure = dw_procedure;
         this.file_name_format = file_name_format;
         this.createdAt = createdAt;
     }
@@ -72,6 +74,14 @@ public class DataSource {
         this.createdAt = createdAt;
     }
 
+    public String getDw_procedure() {
+        return dw_procedure;
+    }
+
+    public void setDw_procedure(String dw_procedure) {
+        this.dw_procedure = dw_procedure;
+    }
+
     public String getFile_name_format() {
         return file_name_format;
     }
@@ -88,6 +98,7 @@ public class DataSource {
                 ", address='" + address + '\'' +
                 ", file_location='" + file_location + '\'' +
                 ", staging_table='" + staging_table + '\'' +
+                ", dw_procedure='" + dw_procedure + '\'' +
                 ", file_name_format='" + file_name_format + '\'' +
                 ", createdAt=" + createdAt +
                 '}';

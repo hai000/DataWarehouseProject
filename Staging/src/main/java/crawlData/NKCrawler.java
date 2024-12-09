@@ -1,6 +1,7 @@
 package crawlData;
 
 import db.DataSource;
+import db.FileLog;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,17 +22,18 @@ public class NKCrawler extends ACrawler<NKProduct>{
     List<String> ids = new ArrayList<>();
 
 
-    public void main(String[] args) {
-        crawlData();
-    }
+//    public void main(String[] args) {
+//        crawlData();
+//    }
 
-    public String crawlData() {
+    public FileLog crawlData(FileLog fileLog) {
         DataSource dataSource =loadConfig("nk_tivi");
         String category = "tivi";
         try {
             int page = 1;
             boolean isCrawlAllProduct = true;
             List<NKProduct> products = new ArrayList<>();
+            ids = new ArrayList<>();
 
             while (true) {
                 String url = String.format("%s/%s/page-%d", mainUrl, category, page);
@@ -50,12 +52,17 @@ public class NKCrawler extends ACrawler<NKProduct>{
                     page++;
                 } else {
                     System.out.println("Error: Unable to fetch data.");
-                    break;
+                    return null;
                 }
             }
 
             System.out.println("Tổng số sản phẩm crawl: " + products.size());
-            return exportProductsToCsv(products, dataSource);
+            File fileData = exportProductsToCsv(products, dataSource);
+            String fileName = fileData.getName();
+            fileLog.setFile_data(fileName);
+            fileLog.setCount(products.size());
+            fileLog.setFile_size_kb((int)fileData.length()/1000);
+            return fileLog;
 
         } catch (Exception e) {
             e.printStackTrace();

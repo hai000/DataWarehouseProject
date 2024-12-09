@@ -25,7 +25,6 @@ public class Connections {
         }
     }
     public static Jdbi getControlJDBI(){
-
         try {
             loadFileConfig();
             if(controlJDBI == null ){

@@ -1,6 +1,7 @@
 package crawlData;
 
 import db.DataSource;
+import db.FileLog;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,13 +19,16 @@ import java.util.List;
 import java.nio.charset.StandardCharsets;
 
 
-public class DMXCrawler extends ACrawler<DMXProduct>{
+public class DMXCrawler extends ACrawler<DMXProduct> {
     private String idCategory;
+    List<String> ids = new ArrayList<>();
+
     public void main(String[] args) {
-        System.out.println(this.crawlData());;
+//        System.out.println(this.crawlData());;
     }
 
-    public String crawlData() {
+    public FileLog crawlData(FileLog fileLog) {
+        // Load các thông tin về source như URL, nơi lưu file, ...
         DataSource dataSource = loadConfig("dmx_tivi");
         String category = "tivi";
         if (mainUrl == null) {
@@ -32,24 +36,25 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
             return null;
         } else {
             try {
-                 idCategory = parseCategory(category);
+                idCategory = parseCategory(category);
                 int page = 0;
-                boolean isCrawlAllProduct = true;
+                ids = new ArrayList<>();
                 List<DMXProduct> products = new ArrayList<>();
 
                 while (true) {
+                    // Tạo URL để gọi đến api
                     String url = createUrlCategory(mainUrl, category, idCategory, 13, page);
                     System.out.println("Đang crawl page: " + page + "\nurl: " + url);
-
+                    // Gửi request để lấy dữ liệu
                     String response = sendRequest(url);
                     if (response != null) {
                         JSONObject jsonObject = new JSONObject(response);
 
                         // Lấy thông tin cần thiết
-                        boolean isShowFilterMonopoly = jsonObject.getBoolean("isShowFilterMonopoly");
                         int totalProducts = jsonObject.getInt("total");
                         String listProductsHtml = jsonObject.getString("listproducts");
                         Document doc = Jsoup.parse(listProductsHtml);
+                        // Gọi hàm parse dữ liệu từ html để tạo các sản phẩm
                         addProducts(products, doc);
 
                         if (totalProducts < 20) {
@@ -58,12 +63,17 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                         page++;
                     } else {
                         System.out.println("Error: Unable to fetch data.");
-                        break;
+                        return null;
                     }
                 }
 
                 System.out.println("Tổng số sản phẩm crawl: " + products.size());
-                return exportProductsToCsv(products, dataSource);
+                File fileData = exportProductsToCsv(products, dataSource);
+                String fileName = fileData.getName();
+                fileLog.setFile_data(fileName);
+                fileLog.setCount(products.size());
+                fileLog.setFile_size_kb((int) fileData.length() / 1000);
+                return fileLog;
 
             } catch (Exception e) {
 
@@ -211,10 +221,10 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                                 audioOutputPorts = li.select("span").text();
                                 break;
                             case "hãng:":
-                                manufacturer = li.select("span").text().replaceAll("Xem thông tin hãng", "");
+                                manufacturer = li.select("span").text().replaceAll("Xem thông tin hãng", "").replaceAll(".", "");
                                 break;
                             case "nơi sản xuất:":
-                                manufacturedIn = li.select("span").text();
+                                manufacturedIn = li.select("span").text().replaceAll(".", "");
                                 break;
                             case "năm ra mắt:":
                                 releaseYear = li.select("span").text();
@@ -265,7 +275,7 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
             String id = productElement.attr("data-id");
             String name = productElement.select("h3").text().trim();
             String price = productElement.select("strong.price").text().replace("₫", "").replace(".", "");
-            if(price.length() ==0) continue;
+            if (price.length() == 0) continue;
             String priceOld = price;
             String imgLink = productElement.select("img").attr("data-src");
             String productLink = mainUrl + productElement.select("a").attr("href");
@@ -290,19 +300,19 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
             }
 
             Element itemGiftElement = productElement.selectFirst("p.item-gift");
-//            System.out.println(itemGiftElement);
             if (itemGiftElement != null) {
                 itemGift = itemGiftElement.text();
-//                System.out.println(itemGift);
-
             }
             DMXProduct product = new DMXProduct(id, name, price, priceOld, imgLink, discountPercent, productLink, itemGift);
-            product = (DMXProduct) getProductDetail(product);
-//            System.out.println(product.getItemGift());
-//            System.out.println("-----------------------------");
-            products.add(product);
+            if (!ids.contains(id)) {
+                product = getProductDetail(product);
+                products.add(product);
+                ids.add(id);
+            }
+
         }
     }
+
     public String parseCategory(String category) {
         switch (category) {
             case "tivi":
@@ -325,8 +335,6 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
     public String createUrlCategory(String mainUrl, String category, String idCategory, int o, int page) {
         return String.format("%s/Category/FilterProductBox?c=%s&o=%d&pi=%d", mainUrl, idCategory, o, page);
     }
-
-
 
 
 }

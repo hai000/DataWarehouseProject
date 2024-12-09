@@ -7,8 +7,6 @@ import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
-import java.sql.Date;
-
 @RegisterBeanMapper(FileLog.class)
 public interface FileLogInterface {
     @SqlQuery("SELECT file_log.id, file_log.config_id, file_log.status, file_log.createdAt, file_log.file_data " +
@@ -25,11 +23,11 @@ public interface FileLogInterface {
             "WHERE file_log.status = :status " +
             "AND file_log.config_id = :config_id " +
             "AND file_log.createdAt = :date")
-    FileLog getBySourceAndStatusAndDate(@Bind("config_id") long config_id, @Bind("status") String status, @Bind("date")Date date);
+    FileLog getBySourceAndStatusAndDate(@Bind("config_id") long config_id, @Bind("status") String status, @Bind("date")String date);
     @SqlQuery("SELECT * FROM file_log " +
             "WHERE file_log.config_id = :config_id " +
             "AND file_log.createdAt = :date")
-    FileLog getBySourceAndDate(@Bind("config_id") long config_id, @Bind("date") Date date);
+    FileLog getBySourceAndDate(@Bind("config_id") long config_id, @Bind("date") String date);
     @SqlUpdate("Update file_log set status =:status where createdAt = curdate() and config_id=:config_id")
     int updateStatusBySource(@Bind("status") String status, @Bind("config_id") long config_id);
     @SqlUpdate("Update file_log set status =:status where id=:id")
@@ -37,6 +35,15 @@ public interface FileLogInterface {
     @SqlUpdate("insert into file_log (config_id, status) " +
             "values(:config_id, :status)")
     int addLog(@BindBean() FileLog fileLog);
-    @SqlUpdate("Update file_log set file_data =:file_data where createdAt = curdate() and config_id=:config_id")
-    int updateFileLocation(@Bind("file_data") String file_data, @Bind("config_id") long config_id);
+    @SqlUpdate("Update file_log " +
+            "set file_data =:file_data , updatedAt=:updatedAt, reloadedAt=:reloadedAt, count=:count, file_size_kb=:file_size_kb, status=:status " +
+            "where createdAt = curdate() and config_id=:config_id")
+    int updateTodayLog(@BindBean() FileLog fileLog, @Bind("config_id") long config_id);
+
+    @SqlUpdate("Update file_log " +
+            "set file_data =:file_data , updatedAt=:updatedAt, reloadedAt=:reloadedAt, count=:count, file_size_kb=:file_size_kb, status=:status " +
+            "where id=:id")
+    int updateLogById(@BindBean() FileLog fileLog);
+
+
 }

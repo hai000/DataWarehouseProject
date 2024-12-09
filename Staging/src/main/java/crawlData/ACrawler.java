@@ -2,6 +2,7 @@ package crawlData;
 
 import db.Connections;
 import db.DataSource;
+import db.FileLog;
 import jdbiInterface.DataSourceInterface;
 import org.jsoup.nodes.Document;
 
@@ -17,11 +18,11 @@ import java.util.List;
 public abstract class ACrawler<T> {
     protected  String mainUrl;
     protected  String fileLocation;
-    public abstract String crawlData();
+    public abstract FileLog crawlData(FileLog fileLog);
     public abstract String sendRequest(String urlString) throws Exception;
     public abstract T getProductDetail(T product) throws Exception;
     public abstract void addProducts(List<T> products, Document doc) throws Exception;
-    public String exportProductsToCsv(List<T> products, DataSource dataSource) {
+    public File exportProductsToCsv(List<T> products, DataSource dataSource) {
         String filename = String.format(dataSource.getFile_name_format(), dataSource.getFile_location(), new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         File file = new File(filename);
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
@@ -47,7 +48,8 @@ public abstract class ACrawler<T> {
                 line.append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
                 writer.println(line.toString());
             }
-            return file.getAbsolutePath().replaceAll("\\\\","/");
+//            return file.getAbsolutePath().replaceAll("\\\\","/");
+            return file;
         } catch (IOException | IllegalAccessException e) {
             e.printStackTrace();
             return null;
@@ -77,6 +79,7 @@ public abstract class ACrawler<T> {
         value = value.replace("\"", "\"\""); // Thay thế dấu nháy kép bằng hai dấu nháy kép
         return "\"" + value + "\""; // Bao quanh giá trị bằng dấu nháy kép
     }
+    // Load các thông tin liên quan đến source: link, nơi lưu file, ...
     public DataSource loadConfig(String source) {
         DataSource dataSource = Connections.getControlJDBI().onDemand(DataSourceInterface.class).getDataSource(source);
         this.mainUrl = dataSource.getAddress();
