@@ -264,5 +264,263 @@ UPDATE product_total_count
 SET total_product_count = (SELECT COUNT(*) FROM fact_product)
 WHERE total_count_id = 1;
 
+-- =======================================
+-- PROCEDURE
+-- =======================================
+DELIMITER $$
+
+CREATE PROCEDURE update_product_count_by_manufacturer()
+BEGIN
+    INSERT INTO product_count_by_manufacturer (manufacturer_id, manufacturer_name, product_count)
+    SELECT f.manufacturer_id, m.manufacturer_name, COUNT(*) AS product_count
+    FROM fact_product f
+    JOIN dim_manufacturer m ON f.manufacturer_id = m.manufacturer_id
+    GROUP BY f.manufacturer_id
+    ON DUPLICATE KEY UPDATE product_count = VALUES(product_count);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_product_price_summary()
+BEGIN
+    DECLARE highest_price DECIMAL(15,2);
+    DECLARE lowest_price DECIMAL(15,2);
+    DECLARE highest_price_product_name VARCHAR(255);
+    DECLARE lowest_price_product_name VARCHAR(255);
+
+    -- Lấy giá trị cao nhất và thấp nhất
+    SELECT MAX(price), MIN(price) INTO highest_price, lowest_price
+    FROM raw_tivi_data;
+
+    -- Lấy tên sản phẩm có giá cao nhất và thấp nhất
+    SELECT name INTO highest_price_product_name
+    FROM raw_tivi_data
+    WHERE price = highest_price
+    LIMIT 1;
+
+    SELECT name INTO lowest_price_product_name
+    FROM raw_tivi_data
+    WHERE price = lowest_price
+    LIMIT 1;
+
+    -- Cập nhật vào bảng `product_price_summary`
+    INSERT INTO product_price_summary (highest_price, lowest_price, highest_price_product_name, lowest_price_product_name)
+    VALUES (highest_price, lowest_price, highest_price_product_name, lowest_price_product_name)
+    ON DUPLICATE KEY UPDATE
+        highest_price = VALUES(highest_price),
+        lowest_price = VALUES(lowest_price),
+        highest_price_product_name = VALUES(highest_price_product_name),
+        lowest_price_product_name = VALUES(lowest_price_product_name);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_product_avg_price()
+BEGIN
+    DECLARE avg_price DECIMAL(15,2);
+
+    -- Lấy giá trị trung bình
+    SELECT AVG(price) INTO avg_price
+    FROM raw_tivi_data;
+
+    -- Cập nhật vào bảng `product_avg_price`
+    INSERT INTO product_avg_price (average_price)
+    VALUES (avg_price)
+    ON DUPLICATE KEY UPDATE average_price = VALUES(average_price);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_product_image_technology_summary()
+BEGIN
+    INSERT INTO product_image_technology_summary (tech_image_id, tech_image_name, product_count)
+    SELECT ti.tech_image_id, ti.image_technology_name, COUNT(*) AS product_count
+    FROM fact_product fp
+    JOIN dim_tech_image ti ON fp.tech_image_id = ti.tech_image_id
+    GROUP BY fp.tech_image_id
+    ON DUPLICATE KEY UPDATE product_count = VALUES(product_count);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_product_audio_technology_summary()
+BEGIN
+    INSERT INTO product_audio_technology_summary (tech_audio_id, tech_audio_name, product_count)
+    SELECT ta.tech_audio_id, ta.audio_technology_name, COUNT(*) AS product_count
+    FROM fact_product fp
+    JOIN dim_tech_audio ta ON fp.tech_audio_id = ta.tech_audio_id
+    GROUP BY fp.tech_audio_id
+    ON DUPLICATE KEY UPDATE product_count = VALUES(product_count);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_product_total_count()
+BEGIN
+    INSERT INTO product_total_count (total_product_count)
+    SELECT COUNT(*) AS total_product_count
+    FROM fact_product
+    ON DUPLICATE KEY UPDATE total_product_count = VALUES(total_product_count);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_dim_name()
+BEGIN
+    INSERT INTO dim_name (name_value)
+    SELECT DISTINCT name
+    FROM raw_tivi_data
+    ON DUPLICATE KEY UPDATE
+        name_value = VALUES(name_value);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_dim_tech_audio()
+BEGIN
+    INSERT INTO dim_tech_audio (audio_technology_name)
+    SELECT DISTINCT soundTechnology
+    FROM raw_tivi_data
+    ON DUPLICATE KEY UPDATE
+        audio_technology_name = VALUES(audio_technology_name);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE update_dim_tech_image()
+BEGIN
+    INSERT INTO dim_tech_image (image_technology_name)
+    SELECT DISTINCT imageTechnology
+    FROM raw_tivi_data
+    ON DUPLICATE KEY UPDATE
+        image_technology_name = VALUES(image_technology_name);
+END $$
+
+DELIMITER ;
+DELIMITER $$
+
+DELIMITER $$
+
+CREATE PROCEDURE update_fact_product()
+BEGIN
+    -- Chèn dữ liệu từ bảng raw_tivi_data vào bảng fact_product, sử dụng ON DUPLICATE KEY UPDATE
+    INSERT INTO fact_product (
+        name_id, product_id, manufacturer_id, tech_image_id, tech_audio_id, price, oldPrice, 
+        discountPercent, screenSize, resolution, operatingSystem, processor, refreshRate, 
+        speakerPower, internetConnection, wirelessConnectivity, usbPorts, videoAudioInputPorts, 
+        releaseYear, warrantyPeriod, itemGift, crawlDate
+    )
+    SELECT DISTINCT
+        n.name_id,
+        p.product_id,
+        m.manufacturer_id,
+        ti.tech_image_id,
+        ta.tech_audio_id,
+        p.price,
+        p.oldPrice,
+        p.discountPercent,
+        p.screenSize,
+        p.resolution,
+        p.operatingSystem,
+        p.processor,
+        p.refreshRate,
+        p.speakerPower,
+        p.internetConnection,
+        p.wirelessConnectivity,
+        p.usbPorts,
+        p.videoAudioInputPorts,
+        p.releaseYear,
+        p.warrantyPeriod,
+        p.itemGift,
+        p.crawlDate  -- Chỉ lấy crawlDate từ raw_tivi_data
+    FROM raw_tivi_data p
+    JOIN dim_manufacturer m ON p.manufacturer = m.manufacturer_name
+    JOIN dim_tech_image ti ON p.imageTechnology = ti.image_technology_name
+    JOIN dim_tech_audio ta ON p.soundTechnology = ta.audio_technology_name
+    JOIN dim_name n ON p.name = n.name_value
+    JOIN date_dimension dd ON p.crawlDate = dd.id
+    ON DUPLICATE KEY UPDATE
+        price = VALUES(price),
+        oldPrice = VALUES(oldPrice),
+        discountPercent = VALUES(discountPercent),
+        screenSize = VALUES(screenSize),
+        resolution = VALUES(resolution),
+        operatingSystem = VALUES(operatingSystem),
+        processor = VALUES(processor),
+        refreshRate = VALUES(refreshRate),
+        speakerPower = VALUES(speakerPower),
+        internetConnection = VALUES(internetConnection),
+        wirelessConnectivity = VALUES(wirelessConnectivity),
+        usbPorts = VALUES(usbPorts),
+        videoAudioInputPorts = VALUES(videoAudioInputPorts),
+        releaseYear = VALUES(releaseYear),
+        warrantyPeriod = VALUES(warrantyPeriod),
+        itemGift = VALUES(itemGift),
+        crawlDate = VALUES(crawlDate);
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE update_raw_tivi_data()
+BEGIN
+    INSERT INTO raw_tivi_data (
+        product_id, manufacturer, imageTechnology, soundTechnology, name, price, oldPrice, 
+        discountPercent, screenSize, resolution, operatingSystem, processor, refreshRate, 
+        speakerPower, internetConnection, wirelessConnectivity, usbPorts, videoAudioInputPorts, 
+        releaseYear, warrantyPeriod, itemGift, crawlDate
+    )
+    SELECT 
+        product_id, manufacturer, imageTechnology, soundTechnology, name, price, oldPrice, 
+        discountPercent, screenSize, resolution, operatingSystem, processor, refreshRate, 
+        speakerPower, internetConnection, wirelessConnectivity, usbPorts, videoAudioInputPorts, 
+        releaseYear, warrantyPeriod, itemGift, crawlDate
+    FROM data_warehouse.data_tivi
+    ON DUPLICATE KEY UPDATE 
+        manufacturer = VALUES(manufacturer),
+        imageTechnology = VALUES(imageTechnology),
+        soundTechnology = VALUES(soundTechnology),
+        name = VALUES(name),
+        price = VALUES(price),
+        oldPrice = VALUES(oldPrice),
+        discountPercent = VALUES(discountPercent),
+        screenSize = VALUES(screenSize),
+        resolution = VALUES(resolution),
+        operatingSystem = VALUES(operatingSystem),
+        processor = VALUES(processor),
+        refreshRate = VALUES(refreshRate),
+        speakerPower = VALUES(speakerPower),
+        internetConnection = VALUES(internetConnection),
+        wirelessConnectivity = VALUES(wirelessConnectivity),
+        usbPorts = VALUES(usbPorts),
+        videoAudioInputPorts = VALUES(videoAudioInputPorts),
+        releaseYear = VALUES(releaseYear),
+        warrantyPeriod = VALUES(warrantyPeriod),
+        itemGift = VALUES(itemGift),
+        crawlDate = VALUES(crawlDate);
+END $$
+
+DELIMITER ;
 
 
+DELIMITER $$
+
+CREATE PROCEDURE update_dim_manufacturer()
+BEGIN
+    INSERT INTO dim_manufacturer (manufacturer_name)
+    SELECT DISTINCT manufacturer
+    FROM raw_tivi_data
+    ON DUPLICATE KEY UPDATE
+        manufacturer_name = VALUES(manufacturer_name);
+END $$
+
+DELIMITER ;
