@@ -1,5 +1,5 @@
 -- --------------------------------------------------------
--- Host:                         127.0.0.1
+-- Host:                         192.168.56.1
 -- Server version:               10.4.28-MariaDB - mariadb.org binary distribution
 -- Server OS:                    Win64
 -- HeidiSQL Version:             12.4.0.6659
@@ -23,10 +23,10 @@ USE `data_warehouse`;
 DELIMITER //
 CREATE PROCEDURE `addDMXData`()
 BEGIN
-    -- Drop the temporary table if it exists
+    -- Xóa bảng tạm nếu đã tồn tại
     DROP TABLE IF EXISTS stg_dmx_data_tmp;
 
-    -- Create a temporary table with the selected data
+    -- 3.9: Lưu những dữ liệu có trong Staging mà chưa có trong data_tivi của data_warehouse vào bảng tạm
     CREATE TEMPORARY TABLE stg_dmx_data_tmp AS
     SELECT *
     FROM staging.stg_dmx_data AS dmx
@@ -35,75 +35,75 @@ BEGIN
         FROM data_tivi 
         WHERE data_tivi.source_id = 1 AND data_tivi.product_id = dmx.id
     );
+    -- 3.10: Thêm source_id cho các dữ liệu trong bảng tạm
 	ALTER TABLE stg_dmx_data_tmp
-	ADD COLUMN source_id bigint;  -- Thay đổi kiểu dữ liệu nếu cần
+	ADD COLUMN source_id bigint; 
 	
-	-- Bước 3: Cập nhật giá trị cho cột mới
 	UPDATE stg_dmx_data_tmp
-	SET source_id = 1;  -- Gán giá trị cho cột mới
-	
+	SET source_id = 1;  -- 1 là source id của dmx
+	-- 3.11: Thay thế ngày Crawl dữ liệu bằng date_dimention id
 	ALTER TABLE stg_dmx_data_tmp
 	ADD COLUMN dateID INT;
 	
 	UPDATE stg_dmx_data_tmp AS dt
-	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate);  -- Gán giá trị cho cột mới
-
-INSERT INTO data_tivi (
-    product_id,
-    name,
-    price,
-    oldPrice,
-    imgLink,
-    discountPercent,
-    productLink,
-    screenSize,
-    resolution,
-    operatingSystem,
-    imageTechnology,
-    processor,
-    refreshRate,
-    speakerPower,
-    internetConnection,
-    wirelessConnectivity,
-    usbPorts,
-    videoAudioInputPorts,
-    manufacturer,
-    manufacturedIn,
-    releaseYear,
-    screenType,
-    audioOutputPorts,
-    itemGift,
-    crawlDate,
-    source_id
-)
-SELECT 
-    id,
-    name,
-    price,
-    oldPrice,
-    imgLink,
-    discountPercent,
-    productLink,
-    screenSize,
-    resolution,
-    operatingSystem,
-    imageTechnology,
-    processor,
-    refreshRate,
-    speakerPower,
-    internetConnection,
-    wirelessConnectivity,
-    usbPorts,
-    videoAudioInputPorts,
-    manufacturer,
-    manufacturedIn,
-    (CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
-    screenType,
-    audioOutputPorts,
-    itemGift,
-    dateID,
-    source_id
-FROM stg_dmx_data_tmp AS dt;
+	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate);  
+	-- 3.12: Thêm dữ liệu từ bảng tạm vào data_tivi
+	INSERT INTO data_tivi (
+	    product_id,
+	    name,
+	    price,
+	    oldPrice,
+	    imgLink,
+	    discountPercent,
+	    productLink,
+	    screenSize,
+	    resolution,
+	    operatingSystem,
+	    imageTechnology,
+	    processor,
+	    refreshRate,
+	    speakerPower,
+	    internetConnection,
+	    wirelessConnectivity,
+	    usbPorts,
+	    videoAudioInputPorts,
+	    manufacturer,
+	    manufacturedIn,
+	    releaseYear,
+	    screenType,
+	    audioOutputPorts,
+	    itemGift,
+	    crawlDate,
+	    source_id
+	)
+	SELECT 
+	    id,
+	    name,
+	    price,
+	    oldPrice,
+	    imgLink,
+	    discountPercent,
+	    productLink,
+	    screenSize,
+	    resolution,
+	    operatingSystem,
+	    imageTechnology,
+	    processor,
+	    refreshRate,
+	    speakerPower,
+	    internetConnection,
+	    wirelessConnectivity,
+	    usbPorts,
+	    videoAudioInputPorts,
+	    manufacturer,
+	    manufacturedIn,
+	    (CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
+	    screenType,
+	    audioOutputPorts,
+	    itemGift,
+	    dateID,
+	    source_id
+	FROM stg_dmx_data_tmp AS dt;
 END//
 DELIMITER ;
 
@@ -111,10 +111,10 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `addNKData`()
 BEGIN
-    -- Drop the temporary table if it exists
+    -- Xóa bảng tạm nếu đã tồn tại
     DROP TABLE IF EXISTS stg_nk_data_tmp;
 
-    -- Create a temporary table with the selected data
+    --  3.9: Lưu những dữ liệu có trong Staging mà chưa có trong data_tivi của data_warehouse vào bảng tạm
     CREATE TEMPORARY TABLE stg_nk_data_tmp AS
     SELECT *
     FROM staging.stg_nk_data AS nk
@@ -123,82 +123,82 @@ BEGIN
         FROM data_tivi 
         WHERE data_tivi.source_id = 2 AND data_tivi.product_id = nk.id
     );
+    -- 3.10: Thêm source_id cho các dữ liệu trong bảng tạm
 	ALTER TABLE stg_nk_data_tmp
-	ADD COLUMN source_id bigint;  -- Thay đổi kiểu dữ liệu nếu cần
+	ADD COLUMN source_id bigint; 
 	
-	-- Bước 3: Cập nhật giá trị cho cột mới
 	UPDATE stg_nk_data_tmp
-	SET source_id = 2;  -- Gán giá trị cho cột mới
-	
+	SET source_id = 2;  
+	-- 3.11: Thay thế ngày Crawl dữ liệu bằng date_dimention id
 	ALTER TABLE stg_nk_data_tmp
 	ADD COLUMN dateID INT;
 	
 	UPDATE stg_nk_data_tmp AS dt
-	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate);  -- Gán giá trị cho cột mới
+	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate); 
 	
-	
-INSERT INTO data_tivi (
-	product_id,
-	NAME,
-	price,
-	oldPrice,
-	imgLink,
-	discountPercent,
-	productLink,
-	screenSize,
-	resolution,
-	operatingSystem,
-	imageTechnology,
-	processor,
-	refreshRate,
-	speakerPower,
-	internetConnection,
-	wirelessConnectivity,
-	usbPorts,
-	videoAudioInputPorts,
-	manufacturer,
-	manufacturedIn,
-	releaseYear,
-	warrantyPeriod,
-	tiviType,
-	hdr,
-	soundTechnology,
-	memory,
-	voiceSearch,
-	crawlDate,
-	source_id
-)
-SELECT 
-	id,
-	NAME,
-	price,
-	oldPrice,
-	imgLink,
-	discountPercent,
-	productLink,
-	screenSize,
-	resolution,
-	operatingSystem,
-	imageTechnology,
-	processor,
-	refreshRate,
-	speakerPower,
-	internetConnection,
-	wirelessConnectivity,
-	usbPorts,
-	videoAudioInputPorts,
-	manufacturer,
-	manufacturedIn,
-	(CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
-	warrantyPeriod,
-	tiviType,
-	hdr,
-	soundTechnology,
-	memory,
-	voiceSearch,
-	dateID,
-	source_id
-FROM stg_nk_data_tmp;
+	-- 3.12: Thêm dữ liệu từ bảng tạm vào data_tivi	
+	INSERT INTO data_tivi (
+		product_id,
+		NAME,
+		price,
+		oldPrice,
+		imgLink,
+		discountPercent,
+		productLink,
+		screenSize,
+		resolution,
+		operatingSystem,
+		imageTechnology,
+		processor,
+		refreshRate,
+		speakerPower,
+		internetConnection,
+		wirelessConnectivity,
+		usbPorts,
+		videoAudioInputPorts,
+		manufacturer,
+		manufacturedIn,
+		releaseYear,
+		warrantyPeriod,
+		tiviType,
+		hdr,
+		soundTechnology,
+		memory,
+		voiceSearch,
+		crawlDate,
+		source_id
+	)
+	SELECT 
+		id,
+		NAME,
+		price,
+		oldPrice,
+		imgLink,
+		discountPercent,
+		productLink,
+		screenSize,
+		resolution,
+		operatingSystem,
+		imageTechnology,
+		processor,
+		refreshRate,
+		speakerPower,
+		internetConnection,
+		wirelessConnectivity,
+		usbPorts,
+		videoAudioInputPorts,
+		manufacturer,
+		manufacturedIn,
+		(CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
+		warrantyPeriod,
+		tiviType,
+		hdr,
+		soundTechnology,
+		memory,
+		voiceSearch,
+		dateID,
+		source_id
+	FROM stg_nk_data_tmp;
 END//
 DELIMITER ;
 
@@ -246,9 +246,9 @@ CREATE TABLE IF NOT EXISTS `data_tivi` (
   KEY `FK_data_tivi_date_dimension` (`crawlDate`),
   CONSTRAINT `FK_data_tivi_date_dimension` FOREIGN KEY (`crawlDate`) REFERENCES `date_dimension` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_data_tivi_file_config` FOREIGN KEY (`source_id`) REFERENCES `file_config` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=650 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=665 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table data_warehouse.data_tivi: ~480 rows (approximately)
+-- Dumping data for table data_warehouse.data_tivi: ~494 rows (approximately)
 INSERT INTO `data_tivi` (`sk`, `source_id`, `product_id`, `name`, `price`, `oldPrice`, `imgLink`, `discountPercent`, `productLink`, `screenSize`, `resolution`, `operatingSystem`, `imageTechnology`, `processor`, `refreshRate`, `speakerPower`, `internetConnection`, `wirelessConnectivity`, `usbPorts`, `videoAudioInputPorts`, `manufacturer`, `manufacturedIn`, `releaseYear`, `screenType`, `audioOutputPorts`, `warrantyPeriod`, `itemGift`, `tiviType`, `hdr`, `soundTechnology`, `memory`, `voiceSearch`, `crawlDate`, `expired`, `isDelete`, `deleteTime`, `changeTime`) VALUES
 	(1, 1, 224099, 'LG Smart TV NanoCell 55NANO81TNA', 24900000.00, 24900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224099/lg-55nano81tna-250420-100412-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-55nano81tna', '55 inch', '4K', 'webOS 5.0', 'Tấm nền NanoCell hiển thị màu rực rỡ Cân bằng độ sáng Ultra Luminance FilmMaker Mode 4K Active HDR Tái tạo màu sắc True Color Accuracy Bộ nâng cấp màu Advanced Color Enhancer Nâng cấp độ phân giải 4K AI Upscaling Chế độ game HGiG', 'NULL', 'Hãng không công bố', '20W', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 2020, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, NULL),
 	(2, 1, 224100, 'LG Smart TV NanoCell 65NANO81TNA', 33900000.00, 33900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224100/lg-65nano81tna-250220-100248-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-65nano81tna', '65 inch', '4K', 'webOS 5.0', 'Góc xem rộng Wide Viewing Angle Giả lập nội dung HDR với HDR Effect Cân bằng độ sáng Ultra Luminance HDR10 Pro Tấm nền NanoCell 2 hiển thị màu rực rỡ HDR Dynamic Tone Mapping 4K Active HDR Kiểm soát đèn nền - Local Dimming Nâng cấp hình ảnh Image Enhancing on SQM', 'NULL', '50 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite, 1 cổng Component', 'NULL', 'NULL', 2020, 'Đèn nền: LED viền (Edge LED), Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, NULL),
@@ -754,20 +754,34 @@ INSERT INTO `data_tivi` (`sk`, `source_id`, `product_id`, `name`, `price`, `oldP
 	(632, 1, 326480, 'TCL Google TV 85C855 Mẫu mới', 76990000.00, 76990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326480/google-tv-qd-mini-led-tcl-4k-85-inch-85c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-85-inch-85c855', '85 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:33:26'),
 	(633, 1, 326481, 'TCL Google TV 98C855 Mẫu mới', 109900000.00, 109900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326481/google-tv-qd-mini-led-tcl-4k-98-inch-98c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-98-inch-98c855', '98 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:33:26'),
 	(634, 1, 326482, 'TCL Google TV 115X955 Mẫu mới', 699900000.00, 699900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326482/google-tv-qd-mini-led-tcl-4k-115-inch-115x955-thumb-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-115-inch-115x955', '115 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '120W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:33:26'),
-	(636, 1, 224099, 'LG Smart TV NanoCell 55NANO81TNA', 24900000.00, 24900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224099/lg-55nano81tna-250420-100412-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-55nano81tna', '55 inch', '4K', 'webOS 5.0', 'Tấm nền NanoCell hiển thị màu rực rỡ Cân bằng độ sáng Ultra Luminance FilmMaker Mode 4K Active HDR Tái tạo màu sắc True Color Accuracy Bộ nâng cấp màu Advanced Color Enhancer Nâng cấp độ phân giải 4K AI Upscaling Chế độ game HGiG', 'NULL', 'Hãng không công bố', '20W', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 2020, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(637, 1, 224100, 'LG Smart TV NanoCell 65NANO81TNA', 33900000.00, 33900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224100/lg-65nano81tna-250220-100248-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-65nano81tna', '65 inch', '4K', 'webOS 5.0', 'Góc xem rộng Wide Viewing Angle Giả lập nội dung HDR với HDR Effect Cân bằng độ sáng Ultra Luminance HDR10 Pro Tấm nền NanoCell 2 hiển thị màu rực rỡ HDR Dynamic Tone Mapping 4K Active HDR Kiểm soát đèn nền - Local Dimming Nâng cấp hình ảnh Image Enhancing on SQM', 'NULL', '50 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite, 1 cổng Component', 'NULL', 'NULL', 2020, 'Đèn nền: LED viền (Edge LED), Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(638, 1, 236803, 'Samsung Smart TV Micro LED The Wall MNA110MS1A', 3499000000.00, 3499000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236803/samsung-micro-led-4k-mna110ms1a-thumb-638647844786324959-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna110ms1a', '110 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(639, 1, 236806, 'Samsung Smart TV Micro LED The Wall MNA99MS1A', 2999000000.00, 2999000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236806/samsung-micro-led-4k-mna99ms1a-thumb-638647845883400614-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna99ms1a', '99 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(640, 1, 244298, 'LG Smart TV 65QNED91TPA', 61900000.00, 61900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/244298/untitled-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-qned-4k-65-inch-65qned91tpa', '65 inch', '4K', 'webOS 6.0', 'Đồng bộ khung hình/tần số quét chơi game VRR HLG Hiển thị màu rực rỡ Quantum Dot NanoCell Color HDR10 Pro HDR Dynamic Tone Mapping Dolby Vision IQ Cinema HDR FilmMaker Mode Full Array Dimming Pro Xử lý hình ảnh AI chuyên sâu Nâng cấp độ phân giải 4K AI Upscaling Nâng cấp hình ảnh Image Enhancing Nâng cấp hình ảnh AI Picture Pro 4K Face Enhancing Góc xem rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'Bộ xử lý α7 Gen4 4K AI', '120 Hz', '40 W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Mini LED, Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(641, 1, 272080, 'TCL Google TV 55P737', 9550000.00, 10990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/272080/android-tcl-4k-55-inch-55p737-thumb-550x340.jpg', -13, 'https://www.dienmayxanh.com/tivi/android-tcl-4k-55-inch-55p737', '55 inch', '4K', 'Google TV (Android 11)', 'Tăng cường chuyển động MEMC 60Hz HLG HDR10 Dolby Vision Kiểm soát đèn nền Micro Dimming', 'NULL', '60 Hz', '19W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '1 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2022, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(642, 1, 306594, 'LG Smart TV 65UR9050PSK', 21900000.00, 21900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/306594/smart-tivi-lg-4k-65-inch-65ur9050psk-080523-112252-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-tivi-lg-4k-65-inch-65ur9050psk', '65 inch', '4K', 'NULL', 'HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Kiểm soát đèn nền - Local Dimming Nâng cấp độ phân giải 4K AI Upscaling Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2023, 'Đèn nền: LED viền (Edge LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(643, 1, 321460, 'Hisense Android TV 40A4200G', 6990000.00, 6990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/321460/tivi-led-hisense-40a4200g-190124-023424-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/tivi-led-hisense-40a4200g', '40 inch', 'Full HD', 'Android', 'NULL', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '2 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2023, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(644, 1, 322660, 'Samsung Smart TV QLED QA65Q80D Mẫu mới', 30900000.00, 32900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/322660/tivi-qled-samsung-4k-65-inch-qa65qn80d-120324-012519-550x340.jpg', -6, 'https://www.dienmayxanh.com/tivi/tivi-qled-samsung-4k-65-inch-qa65q80d', '65 inch', '4K', 'Tizen™', 'Đèn nền Direct Full Array Supreme UHD Dimming Quantum Dot Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Góc nhìn rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ Game Motion Plus Ambient Mode+', 'NULL', '120 Hz', '40W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Full Array LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 520.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(645, 1, 324901, 'Smart Tivi LG 4K 43 inch 43UT8050PSB Mẫu mới', 9390000.00, 11900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/324901/tivi-led-4k-lg-43-inch-43ut8050psb-thum-550x340.jpg', -21, 'https://www.dienmayxanh.com/tivi/tivi-led-4k-lg-43-inch-43ut8050psb', '43 inch', '4K', 'NULL', 'Nâng cấp độ phân giải 4K AI Upscaling HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Direct LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 300.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(646, 1, 326478, 'TCL Google TV 85C755 Mẫu mới', 49990000.00, 49990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326478/google-tivi-tcl-qd-mini-led-4k-85c755-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tivi-tcl-qd-mini-led-4k-85c755', '85 inch', '4K', 'Google TV', 'HLG HDR10+ Dolby Vision IQ Quantum Dot Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced', 'NULL', '144 Hz', '30W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(647, 1, 326480, 'TCL Google TV 85C855 Mẫu mới', 76990000.00, 76990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326480/google-tv-qd-mini-led-tcl-4k-85-inch-85c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-85-inch-85c855', '85 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(648, 1, 326481, 'TCL Google TV 98C855 Mẫu mới', 109900000.00, 109900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326481/google-tv-qd-mini-led-tcl-4k-98-inch-98c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-98-inch-98c855', '98 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14'),
-	(649, 1, 326482, 'TCL Google TV 115X955 Mẫu mới', 699900000.00, 699900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326482/google-tv-qd-mini-led-tcl-4k-115-inch-115x955-thumb-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-115-inch-115x955', '115 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '120W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 13:42:14');
+	(636, 1, 224099, 'LG Smart TV NanoCell 55NANO81TNA', 24900000.00, 24900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224099/lg-55nano81tna-250420-100412-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-55nano81tna', '55 inch', '4K', 'webOS 5.0', 'Tấm nền NanoCell hiển thị màu rực rỡ Cân bằng độ sáng Ultra Luminance FilmMaker Mode 4K Active HDR Tái tạo màu sắc True Color Accuracy Bộ nâng cấp màu Advanced Color Enhancer Nâng cấp độ phân giải 4K AI Upscaling Chế độ game HGiG', 'NULL', 'Hãng không công bố', '20W', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 2020, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(637, 1, 224100, 'LG Smart TV NanoCell 65NANO81TNA', 33900000.00, 33900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224100/lg-65nano81tna-250220-100248-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-65nano81tna', '65 inch', '4K', 'webOS 5.0', 'Góc xem rộng Wide Viewing Angle Giả lập nội dung HDR với HDR Effect Cân bằng độ sáng Ultra Luminance HDR10 Pro Tấm nền NanoCell 2 hiển thị màu rực rỡ HDR Dynamic Tone Mapping 4K Active HDR Kiểm soát đèn nền - Local Dimming Nâng cấp hình ảnh Image Enhancing on SQM', 'NULL', '50 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite, 1 cổng Component', 'NULL', 'NULL', 2020, 'Đèn nền: LED viền (Edge LED), Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(638, 1, 236803, 'Samsung Smart TV Micro LED The Wall MNA110MS1A', 3499000000.00, 3499000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236803/samsung-micro-led-4k-mna110ms1a-thumb-638647844786324959-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna110ms1a', '110 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(639, 1, 236806, 'Samsung Smart TV Micro LED The Wall MNA99MS1A', 2999000000.00, 2999000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236806/samsung-micro-led-4k-mna99ms1a-thumb-638647845883400614-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna99ms1a', '99 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(640, 1, 244298, 'LG Smart TV 65QNED91TPA', 61900000.00, 61900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/244298/untitled-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-qned-4k-65-inch-65qned91tpa', '65 inch', '4K', 'webOS 6.0', 'Đồng bộ khung hình/tần số quét chơi game VRR HLG Hiển thị màu rực rỡ Quantum Dot NanoCell Color HDR10 Pro HDR Dynamic Tone Mapping Dolby Vision IQ Cinema HDR FilmMaker Mode Full Array Dimming Pro Xử lý hình ảnh AI chuyên sâu Nâng cấp độ phân giải 4K AI Upscaling Nâng cấp hình ảnh Image Enhancing Nâng cấp hình ảnh AI Picture Pro 4K Face Enhancing Góc xem rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'Bộ xử lý α7 Gen4 4K AI', '120 Hz', '40 W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Mini LED, Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(641, 1, 272080, 'TCL Google TV 55P737', 9550000.00, 10990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/272080/android-tcl-4k-55-inch-55p737-thumb-550x340.jpg', -13, 'https://www.dienmayxanh.com/tivi/android-tcl-4k-55-inch-55p737', '55 inch', '4K', 'Google TV (Android 11)', 'Tăng cường chuyển động MEMC 60Hz HLG HDR10 Dolby Vision Kiểm soát đèn nền Micro Dimming', 'NULL', '60 Hz', '19W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '1 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2022, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(642, 1, 306594, 'LG Smart TV 65UR9050PSK', 21900000.00, 21900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/306594/smart-tivi-lg-4k-65-inch-65ur9050psk-080523-112252-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-tivi-lg-4k-65-inch-65ur9050psk', '65 inch', '4K', 'NULL', 'HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Kiểm soát đèn nền - Local Dimming Nâng cấp độ phân giải 4K AI Upscaling Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2023, 'Đèn nền: LED viền (Edge LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(643, 1, 321460, 'Hisense Android TV 40A4200G', 6990000.00, 6990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/321460/tivi-led-hisense-40a4200g-190124-023424-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/tivi-led-hisense-40a4200g', '40 inch', 'Full HD', 'Android', 'NULL', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '2 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2023, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(644, 1, 322660, 'Samsung Smart TV QLED QA65Q80D Mẫu mới', 30900000.00, 32900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/322660/tivi-qled-samsung-4k-65-inch-qa65qn80d-120324-012519-550x340.jpg', -6, 'https://www.dienmayxanh.com/tivi/tivi-qled-samsung-4k-65-inch-qa65q80d', '65 inch', '4K', 'Tizen™', 'Đèn nền Direct Full Array Supreme UHD Dimming Quantum Dot Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Góc nhìn rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ Game Motion Plus Ambient Mode+', 'NULL', '120 Hz', '40W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Full Array LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 520.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(645, 1, 324901, 'Smart Tivi LG 4K 43 inch 43UT8050PSB Mẫu mới', 9390000.00, 11900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/324901/tivi-led-4k-lg-43-inch-43ut8050psb-thum-550x340.jpg', -21, 'https://www.dienmayxanh.com/tivi/tivi-led-4k-lg-43-inch-43ut8050psb', '43 inch', '4K', 'NULL', 'Nâng cấp độ phân giải 4K AI Upscaling HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Direct LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 300.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(646, 1, 326478, 'TCL Google TV 85C755 Mẫu mới', 49990000.00, 49990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326478/google-tivi-tcl-qd-mini-led-4k-85c755-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tivi-tcl-qd-mini-led-4k-85c755', '85 inch', '4K', 'Google TV', 'HLG HDR10+ Dolby Vision IQ Quantum Dot Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced', 'NULL', '144 Hz', '30W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(647, 1, 326480, 'TCL Google TV 85C855 Mẫu mới', 76990000.00, 76990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326480/google-tv-qd-mini-led-tcl-4k-85-inch-85c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-85-inch-85c855', '85 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(648, 1, 326481, 'TCL Google TV 98C855 Mẫu mới', 109900000.00, 109900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326481/google-tv-qd-mini-led-tcl-4k-98-inch-98c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-98-inch-98c855', '98 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(649, 1, 326482, 'TCL Google TV 115X955 Mẫu mới', 699900000.00, 699900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326482/google-tv-qd-mini-led-tcl-4k-115-inch-115x955-thumb-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-115-inch-115x955', '115 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '120W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '2024-12-09', 0, NULL, '2024-12-09 13:42:14'),
+	(650, 1, 224099, 'LG Smart TV NanoCell 55NANO81TNA', 24900000.00, 24900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224099/lg-55nano81tna-250420-100412-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-55nano81tna', '55 inch', '4K', 'webOS 5.0', 'Tấm nền NanoCell hiển thị màu rực rỡ Cân bằng độ sáng Ultra Luminance FilmMaker Mode 4K Active HDR Tái tạo màu sắc True Color Accuracy Bộ nâng cấp màu Advanced Color Enhancer Nâng cấp độ phân giải 4K AI Upscaling Chế độ game HGiG', 'NULL', 'Hãng không công bố', '20W', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 2020, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(651, 1, 224100, 'LG Smart TV NanoCell 65NANO81TNA', 33900000.00, 33900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/224100/lg-65nano81tna-250220-100248-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/lg-65nano81tna', '65 inch', '4K', 'webOS 5.0', 'Góc xem rộng Wide Viewing Angle Giả lập nội dung HDR với HDR Effect Cân bằng độ sáng Ultra Luminance HDR10 Pro Tấm nền NanoCell 2 hiển thị màu rực rỡ HDR Dynamic Tone Mapping 4K Active HDR Kiểm soát đèn nền - Local Dimming Nâng cấp hình ảnh Image Enhancing on SQM', 'NULL', '50 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite, 1 cổng Component', 'NULL', 'NULL', 2020, 'Đèn nền: LED viền (Edge LED), Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(652, 1, 236803, 'Samsung Smart TV Micro LED The Wall MNA110MS1A', 3499000000.00, 3499000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236803/samsung-micro-led-4k-mna110ms1a-thumb-638647844786324959-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna110ms1a', '110 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(653, 1, 236806, 'Samsung Smart TV Micro LED The Wall MNA99MS1A', 2999000000.00, 2999000000.00, 'https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1942/236806/samsung-micro-led-4k-mna99ms1a-thumb-638647845883400614-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/samsung-micro-led-4k-mna99ms1a', '99 inch', '4K', 'Tizen™', 'Quantum Dot Chế độ hình ảnh tự nhiên Natural Mode Cân chỉnh màu sắc Expert Calibration Adaptive Picture Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Ambient Mode+', 'NULL', '120 Hz', '80W', 'Wi-Fi', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '6 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Micro LED, Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(654, 1, 244298, 'LG Smart TV 65QNED91TPA', 61900000.00, 61900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/244298/untitled-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-qned-4k-65-inch-65qned91tpa', '65 inch', '4K', 'webOS 6.0', 'Đồng bộ khung hình/tần số quét chơi game VRR HLG Hiển thị màu rực rỡ Quantum Dot NanoCell Color HDR10 Pro HDR Dynamic Tone Mapping Dolby Vision IQ Cinema HDR FilmMaker Mode Full Array Dimming Pro Xử lý hình ảnh AI chuyên sâu Nâng cấp độ phân giải 4K AI Upscaling Nâng cấp hình ảnh Image Enhancing Nâng cấp hình ảnh AI Picture Pro 4K Face Enhancing Góc xem rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'Bộ xử lý α7 Gen4 4K AI', '120 Hz', '40 W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2021, 'Đèn nền: Mini LED, Tấm nền: IPS LCD', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(655, 1, 272080, 'TCL Google TV 55P737', 9550000.00, 10990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/272080/android-tcl-4k-55-inch-55p737-thumb-550x340.jpg', -13, 'https://www.dienmayxanh.com/tivi/android-tcl-4k-55-inch-55p737', '55 inch', '4K', 'Google TV (Android 11)', 'Tăng cường chuyển động MEMC 60Hz HLG HDR10 Dolby Vision Kiểm soát đèn nền Micro Dimming', 'NULL', '60 Hz', '19W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '1 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2022, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(656, 1, 306594, 'LG Smart TV 65UR9050PSK', 21900000.00, 21900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/306594/smart-tivi-lg-4k-65-inch-65ur9050psk-080523-112252-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/smart-tivi-lg-4k-65-inch-65ur9050psk', '65 inch', '4K', 'NULL', 'HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Kiểm soát đèn nền - Local Dimming Nâng cấp độ phân giải 4K AI Upscaling Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', 'NULL', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2023, 'Đèn nền: LED viền (Edge LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(657, 1, 321460, 'Hisense Android TV 40A4200G', 6990000.00, 6990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/321460/tivi-led-hisense-40a4200g-190124-023424-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/tivi-led-hisense-40a4200g', '40 inch', 'Full HD', 'Android', 'NULL', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối loa, thiết bị di động)', '2 cổng USB A', '2 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2023, 'Đèn nền: LED nền (Direct LED), Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(658, 1, 322660, 'Samsung Smart TV QLED QA65Q80D Mẫu mới', 30900000.00, 32900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/322660/tivi-qled-samsung-4k-65-inch-qa65qn80d-120324-012519-550x340.jpg', -6, 'https://www.dienmayxanh.com/tivi/tivi-qled-samsung-4k-65-inch-qa65q80d', '65 inch', '4K', 'Tizen™', 'Đèn nền Direct Full Array Supreme UHD Dimming Quantum Dot Chống xé hình FreeSync Premium Pro Super Ultra Wide Game View & Game Bar Góc nhìn rộng Wide Viewing Angle Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ Game Motion Plus Ambient Mode+', 'NULL', '120 Hz', '40W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Full Array LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 520.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(659, 1, 324901, 'LG Smart TV 43UT8050PSB Mẫu mới', 9390000.00, 11900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/324901/tivi-led-4k-lg-43-inch-43ut8050psb-thum-550x340.jpg', -21, 'https://www.dienmayxanh.com/tivi/tivi-led-4k-lg-43-inch-43ut8050psb', '43 inch', '4K', 'NULL', 'Nâng cấp độ phân giải 4K AI Upscaling HLG HDR10 Pro HDR Dynamic Tone Mapping FilmMaker Mode Giảm độ trễ chơi game Auto Low Latency Mode (ALLM) Chế độ game HGiG', 'NULL', '60 Hz', '20W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '3 cổng HDMI có 1 cổng HDMI eARC (ARC)', 'NULL', 'NULL', 2024, 'Đèn nền: LED nền (Direct LED), Tấm nền: Hãng không công bố', '1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'Quà 300.000₫', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(660, 1, 326478, 'TCL Google TV 85C755 Mẫu mới', 49990000.00, 49990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326478/google-tivi-tcl-qd-mini-led-4k-85c755-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tivi-tcl-qd-mini-led-4k-85c755', '85 inch', '4K', 'Google TV', 'HLG HDR10+ Dolby Vision IQ Quantum Dot Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced', 'NULL', '144 Hz', '30W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(661, 1, 326480, 'TCL Google TV 85C855 Mẫu mới', 76990000.00, 76990000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326480/google-tv-qd-mini-led-tcl-4k-85-inch-85c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-85-inch-85c855', '85 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '2 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(662, 1, 326481, 'TCL Google TV 98C855 Mẫu mới', 109900000.00, 109900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326481/google-tv-qd-mini-led-tcl-4k-98-inch-98c855-thumb-1-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-98-inch-98c855', '98 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '60W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12'),
+	(663, 1, 326482, 'TCL Google TV 115X955 Mẫu mới', 699900000.00, 699900000.00, 'https://cdn.tgdd.vn/Products/Images/1942/326482/google-tv-qd-mini-led-tcl-4k-115-inch-115x955-thumb-550x340.jpg', 0, 'https://www.dienmayxanh.com/tivi/google-tv-qd-mini-led-tcl-4k-115-inch-115x955', '115 inch', '4K', 'Google TV', 'Tấm nền Quantum Dot hiển thị màu rực rỡ HLG HDR10+ Dolby Vision IQ Full Array Local Dimming Tăng cường chuyển động MEMC 120 Hz Tương thích chuẩn IMAX Enhanced Giảm độ trễ chơi game Auto Low Latency Mode (ALLM)', 'NULL', '120 Hz', '120W', 'Wi-Fi Cổng mạng LAN', 'Bluetooth (Kết nối bàn phím, chuột)', '3 cổng USB A', '4 cổng HDMI có 1 cổng HDMI eARC (ARC), 1 cổng Composite', 'NULL', 'NULL', 2024, 'Đèn nền: Mini LED, Tấm nền: VA LCD', '1 cổng 3.5 mm, 1 cổng Optical (Digital Audio), 1 cổng eARC (ARC)', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 7283, '9999-12-30', 0, NULL, '2024-12-09 16:07:12');
 
 -- Dumping structure for table data_warehouse.date_dimension
 CREATE TABLE IF NOT EXISTS `date_dimension` (
@@ -8494,6 +8508,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `replaceEmptyData`()
 BEGIN
+-- 3.17: Thay thế các giá trị trỗng trong data_tivi
    UPDATE data_tivi 
    SET
        name = CASE WHEN name = '' THEN "NULL" ELSE name END,
@@ -8529,10 +8544,10 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `updateDMXData`()
 BEGIN
-    -- Drop the temporary table if it exists
+    -- Xóa bảng tạm nếu đã tồn tại
     DROP TABLE IF EXISTS stg_dmx_data_tmp;
 
-    -- Create a temporary table with the selected data
+    -- 3.13: Lưu những dữ liệu của Staging đã có trong data_tivi của data_warehouse nhưng trong Staging có sự thay đổi vào bảng tạm
 	CREATE TEMPORARY TABLE stg_dmx_data_tmp AS
 	SELECT *
 	FROM staging.stg_dmx_data AS dmx
@@ -8549,87 +8564,86 @@ BEGIN
 	          dmx.itemGift != dt.itemGift
 	      )
 	);
+		
+		-- 3.14: Set expire cho các giá trị trong data_tivi của data_warehouse có id và source_id trùng với các dữ liệu trong bảng tạm
+	UPDATE data_tivi SET expired = CURDATE()
+	WHERE product_id IN (SELECT id FROM stg_dmx_data_tmp)
+	AND expired > CURDATE();
+	
+		-- 3.15: Thêm source_id cho các dữ liệu trong bảng tạm
 	ALTER TABLE stg_dmx_data_tmp
 	ADD COLUMN source_id bigint;  -- Thay đổi kiểu dữ liệu nếu cần
-	
-	-- Bước 3: Cập nhật giá trị cho cột mới
+		
 	UPDATE stg_dmx_data_tmp
 	SET source_id = 1;  -- Gán giá trị cho cột mới
-	
+	-- 3.16: Thay thế ngày Crawl dữ liệu bằng date_dimention id
 	ALTER TABLE stg_dmx_data_tmp
 	ADD COLUMN dateID INT;
 	
 	UPDATE stg_dmx_data_tmp AS dt
 	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate);  -- Gán giá trị cho cột mới
 	
-	-- cập nhật expire cho các dòng update dữ liệu
-	UPDATE data_tivi SET expired = CURDATE()
-	WHERE product_id IN (SELECT id FROM stg_dmx_data_tmp)
-	AND expired > CURDATE();
-	
-	
-	
-INSERT INTO data_tivi (
-    product_id,
-    name,
-    price,
-    oldPrice,
-    imgLink,
-    discountPercent,
-    productLink,
-    screenSize,
-    resolution,
-    operatingSystem,
-    imageTechnology,
-    processor,
-    refreshRate,
-    speakerPower,
-    internetConnection,
-    wirelessConnectivity,
-    usbPorts,
-    videoAudioInputPorts,
-    manufacturer,
-    manufacturedIn,
-    releaseYear,
-    screenType,
-    audioOutputPorts,
-    itemGift,
-    crawlDate,
-    source_id
-)
-SELECT 
-    id,
-    name,
-    price,
-    oldPrice,
-    imgLink,
-    discountPercent,
-    productLink,
-    screenSize,
-    resolution,
-    operatingSystem,
-    imageTechnology,
-    processor,
-    refreshRate,
-    speakerPower,
-    internetConnection,
-    wirelessConnectivity,
-    usbPorts,
-    videoAudioInputPorts,
-    manufacturer,
-    manufacturedIn,
-    (CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
-    screenType,
-    audioOutputPorts,
-    itemGift,
-    dateID,
-    source_id
-FROM stg_dmx_data_tmp;
 
-	-- cập nhật changTime dòng update dữ liệu
-	UPDATE data_tivi SET changeTime = CURRENT_TIMESTAMP()
-	WHERE product_id IN (SELECT id FROM stg_dmx_data_tmp)
-	AND expired > CURDATE();
+	
+	-- 3.17: Thêm dữ liệu từ bảng tạm vào data_tivi
+	INSERT INTO data_tivi (
+	    product_id,
+	    name,
+	    price,
+	    oldPrice,
+	    imgLink,
+	    discountPercent,
+	    productLink,
+	    screenSize,
+	    resolution,
+	    operatingSystem,
+	    imageTechnology,
+	    processor,
+	    refreshRate,
+	    speakerPower,
+	    internetConnection,
+	    wirelessConnectivity,
+	    usbPorts,
+	    videoAudioInputPorts,
+	    manufacturer,
+	    manufacturedIn,
+	    releaseYear,
+	    screenType,
+	    audioOutputPorts,
+	    itemGift,
+	    crawlDate,
+	    source_id
+	)
+	SELECT 
+	    id,
+	    name,
+	    price,
+	    oldPrice,
+	    imgLink,
+	    discountPercent,
+	    productLink,
+	    screenSize,
+	    resolution,
+	    operatingSystem,
+	    imageTechnology,
+	    processor,
+	    refreshRate,
+	    speakerPower,
+	    internetConnection,
+	    wirelessConnectivity,
+	    usbPorts,
+	    videoAudioInputPorts,
+	    manufacturer,
+	    manufacturedIn,
+	    (CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
+	    screenType,
+	    audioOutputPorts,
+	    itemGift,
+	    dateID,
+	    source_id
+	FROM stg_dmx_data_tmp;
+
+	
 END//
 DELIMITER ;
 
@@ -8637,10 +8651,10 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `updateNKData`()
 BEGIN
-    -- Drop the temporary table if it exists
+    -- Xóa bảng tạm nếu đã tồn tại
     DROP TABLE IF EXISTS stg_nk_data_tmp;
 
-    -- Create a temporary table with the selected data
+    -- 3.13: Lưu những dữ liệu của Staging đã có trong data_tivi của data_warehouse nhưng trong Staging có sự thay đổi vào bảng tạm
     CREATE TEMPORARY TABLE stg_nk_data_tmp AS
     SELECT *
     FROM staging.stg_nk_data AS nk
@@ -8656,89 +8670,88 @@ BEGIN
 	          nk.discountPercent != dt.discountPercent
 	      )
     );
+    -- 3.14: Set expire cho các giá trị trong data_tivi của data_warehouse có id và source_id trùng với các dữ liệu trong bảng tạm
+   UPDATE data_tivi SET expired = CURDATE()
+	WHERE product_id IN (SELECT id FROM stg_nk_data_tmp)
+	AND expired > CURDATE();
+	
+		-- 3.15: Thêm source_id cho các dữ liệu trong bảng tạm
 	ALTER TABLE stg_nk_data_tmp
-	ADD COLUMN source_id bigint;  -- Thay đổi kiểu dữ liệu nếu cần
+	ADD COLUMN source_id bigint; 
 	
-	-- Bước 3: Cập nhật giá trị cho cột mới
 	UPDATE stg_nk_data_tmp
-	SET source_id = 2;  -- Gán giá trị cho cột mới
-	
+	SET source_id = 2; 
+	-- 3.16: Thay thế ngày Crawl dữ liệu bằng date_dimention id
 	ALTER TABLE stg_nk_data_tmp
 	ADD COLUMN dateID INT;
 	
 	UPDATE stg_nk_data_tmp AS dt
 	SET dateID = (SELECT date_dimension.id FROM date_dimension WHERE full_date = dt.crawlDate);  -- Gán giá trị cho cột mới
 	
-	-- cập nhật expire cho các dòng dữ liệu thay đổi
-	UPDATE data_tivi SET expired = CURDATE()
-	WHERE product_id IN (SELECT id FROM stg_nk_data_tmp)
-	AND expired > CURDATE();
-INSERT INTO data_tivi (
-	product_id,
-	NAME,
-	price,
-	oldPrice,
-	imgLink,
-	discountPercent,
-	productLink,
-	screenSize,
-	resolution,
-	operatingSystem,
-	imageTechnology,
-	processor,
-	refreshRate,
-	speakerPower,
-	internetConnection,
-	wirelessConnectivity,
-	usbPorts,
-	videoAudioInputPorts,
-	manufacturer,
-	manufacturedIn,
-	releaseYear,
-	warrantyPeriod,
-	tiviType,
-	hdr,
-	soundTechnology,
-	memory,
-	voiceSearch,
-	crawlDate,
-	source_id
-)
-SELECT 
-	id,
-	NAME,
-	price,
-	oldPrice,
-	imgLink,
-	discountPercent,
-	productLink,
-	screenSize,
-	resolution,
-	operatingSystem,
-	imageTechnology,
-	processor,
-	refreshRate,
-	speakerPower,
-	internetConnection,
-	wirelessConnectivity,
-	usbPorts,
-	videoAudioInputPorts,
-	manufacturer,
-	manufacturedIn,
-	(CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
-	warrantyPeriod,
-	tiviType,
-	hdr,
-	soundTechnology,
-	memory,
-	voiceSearch,
-	dateID,
-	source_id
-FROM stg_nk_data_tmp;
-	-- cập nhật changTime dòng update dữ liệu
-	UPDATE data_tivi SET changeTime = CURRENT_TIMESTAMP()
-	WHERE product_id IN (SELECT id FROM stg_nk_data_tmp)
-	AND expired > CURDATE();
+	-- 3.17: Thêm dữ liệu từ bảng tạm vào data_tivi
+	INSERT INTO data_tivi (
+		product_id,
+		NAME,
+		price,
+		oldPrice,
+		imgLink,
+		discountPercent,
+		productLink,
+		screenSize,
+		resolution,
+		operatingSystem,
+		imageTechnology,
+		processor,
+		refreshRate,
+		speakerPower,
+		internetConnection,
+		wirelessConnectivity,
+		usbPorts,
+		videoAudioInputPorts,
+		manufacturer,
+		manufacturedIn,
+		releaseYear,
+		warrantyPeriod,
+		tiviType,
+		hdr,
+		soundTechnology,
+		memory,
+		voiceSearch,
+		crawlDate,
+		source_id
+	)
+	SELECT 
+		id,
+		NAME,
+		price,
+		oldPrice,
+		imgLink,
+		discountPercent,
+		productLink,
+		screenSize,
+		resolution,
+		operatingSystem,
+		imageTechnology,
+		processor,
+		refreshRate,
+		speakerPower,
+		internetConnection,
+		wirelessConnectivity,
+		usbPorts,
+		videoAudioInputPorts,
+		manufacturer,
+		manufacturedIn,
+		(CASE WHEN releaseYear = '' THEN 0 ELSE CAST(releaseYear AS INT) END),
+		warrantyPeriod,
+		tiviType,
+		hdr,
+		soundTechnology,
+		memory,
+		voiceSearch,
+		dateID,
+		source_id
+	FROM stg_nk_data_tmp;
+	
 END//
 DELIMITER ;
 

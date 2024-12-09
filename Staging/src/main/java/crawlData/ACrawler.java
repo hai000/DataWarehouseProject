@@ -79,6 +79,7 @@ public abstract class ACrawler<T> {
         value = value.replace("\"", "\"\""); // Thay thế dấu nháy kép bằng hai dấu nháy kép
         return "\"" + value + "\""; // Bao quanh giá trị bằng dấu nháy kép
     }
+    // Load các thông tin liên quan đến source: link, nơi lưu file, ...
     public DataSource loadConfig(String source) {
         DataSource dataSource = Connections.getControlJDBI().onDemand(DataSourceInterface.class).getDataSource(source);
         this.mainUrl = dataSource.getAddress();
