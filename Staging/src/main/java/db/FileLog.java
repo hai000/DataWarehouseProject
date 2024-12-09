@@ -1,6 +1,7 @@
 package db;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public class FileLog {
     private long id;
@@ -8,16 +9,57 @@ public class FileLog {
     private String status;
     private Date createdAt;
     private String file_data;
+    private Timestamp updatedAt;
+    private Timestamp reloadedAt;
+    private int count=0;
+    private int file_size_kb=0;
 
-    public FileLog(long id, long config_id, String status, Date createdAt, String file_data) {
+
+    public FileLog(long id, long config_id, String status, Date createdAt, String file_data, Timestamp updatedAt, Timestamp reloadedAt, int count, int file_size_kb) {
         this.id = id;
         this.config_id = config_id;
         this.status = status;
         this.createdAt = createdAt;
         this.file_data = file_data;
+        this.updatedAt = updatedAt;
+        this.reloadedAt = reloadedAt;
+        this.count = count;
+        this.file_size_kb = file_size_kb;
     }
 
     public FileLog() {
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Timestamp getReloadedAt() {
+        return reloadedAt;
+    }
+
+    public void setReloadedAt(Timestamp reloadedAt) {
+        this.reloadedAt = reloadedAt;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getFile_size_kb() {
+        return file_size_kb;
+    }
+
+    public void setFile_size_kb(int file_size_kb) {
+        this.file_size_kb = file_size_kb;
     }
 
     public FileLog(long config_id, String status) {
@@ -74,6 +116,10 @@ public class FileLog {
                 ", status='" + status + '\'' +
                 ", createdAt=" + createdAt +
                 ", file_data='" + file_data + '\'' +
+                ", updatedAt=" + updatedAt +
+                ", reloadedAt=" + reloadedAt +
+                ", count=" + count +
+                ", file_size_kb=" + file_size_kb +
                 '}';
     }
 }

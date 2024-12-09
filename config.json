@@ -1,5 +1,5 @@
 {
-  "control": {"ip": "localhost","port": 3306 , "dbname": "control", "username": "root", "password": ""},
-  "staging": {"ip": "localhost","port": 3306 , "dbname": "staging", "username": "root", "password": ""},
-  "data_warehouse": {"ip": "localhost","port": 3306 , "dbname": "data_warehouse", "username": "root", "password": ""}
+  "control": {"ip": "192.168.56.1","port": 3306 , "dbname": "control", "username": "root", "password": "21092003"},
+  "staging": {"ip": "192.168.56.1","port": 3306 , "dbname": "staging", "username": "root", "password": "21092003"},
+  "data_warehouse": {"ip": "192.168.56.1","port": 3306 , "dbname": "data_warehouse", "username": "root", "password": "21092003"}
 }

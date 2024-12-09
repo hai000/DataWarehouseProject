@@ -1,6 +1,7 @@
 package crawlData;
 
 import db.DataSource;
+import db.FileLog;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,11 +21,12 @@ import java.nio.charset.StandardCharsets;
 
 public class DMXCrawler extends ACrawler<DMXProduct>{
     private String idCategory;
+    List<String> ids = new ArrayList<>();
     public void main(String[] args) {
-        System.out.println(this.crawlData());;
+//        System.out.println(this.crawlData());;
     }
 
-    public String crawlData() {
+    public FileLog crawlData(FileLog fileLog) {
         DataSource dataSource = loadConfig("dmx_tivi");
         String category = "tivi";
         if (mainUrl == null) {
@@ -35,6 +37,7 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                  idCategory = parseCategory(category);
                 int page = 0;
                 boolean isCrawlAllProduct = true;
+                ids = new ArrayList<>();
                 List<DMXProduct> products = new ArrayList<>();
 
                 while (true) {
@@ -58,12 +61,17 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                         page++;
                     } else {
                         System.out.println("Error: Unable to fetch data.");
-                        break;
+                        return null;
                     }
                 }
 
                 System.out.println("Tổng số sản phẩm crawl: " + products.size());
-                return exportProductsToCsv(products, dataSource);
+                File fileData = exportProductsToCsv(products, dataSource);
+                String fileName = fileData.getName();
+                fileLog.setFile_data(fileName);
+                fileLog.setCount(products.size());
+                fileLog.setFile_size_kb((int)fileData.length()/1000);
+                return fileLog;
 
             } catch (Exception e) {
 
@@ -211,10 +219,10 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
                                 audioOutputPorts = li.select("span").text();
                                 break;
                             case "hãng:":
-                                manufacturer = li.select("span").text().replaceAll("Xem thông tin hãng", "");
+                                manufacturer = li.select("span").text().replaceAll("Xem thông tin hãng", "").replaceAll(".","");
                                 break;
                             case "nơi sản xuất:":
-                                manufacturedIn = li.select("span").text();
+                                manufacturedIn = li.select("span").text().replaceAll(".","");
                                 break;
                             case "năm ra mắt:":
                                 releaseYear = li.select("span").text();
@@ -297,10 +305,12 @@ public class DMXCrawler extends ACrawler<DMXProduct>{
 
             }
             DMXProduct product = new DMXProduct(id, name, price, priceOld, imgLink, discountPercent, productLink, itemGift);
-            product = (DMXProduct) getProductDetail(product);
-//            System.out.println(product.getItemGift());
-//            System.out.println("-----------------------------");
-            products.add(product);
+            if(!ids.contains(id)){
+                product = getProductDetail(product);
+                products.add(product);
+                ids.add(id);
+            }
+
         }
     }
     public String parseCategory(String category) {
