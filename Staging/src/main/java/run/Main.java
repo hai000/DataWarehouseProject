@@ -24,5 +24,6 @@ public class Main {
         LoadFileToDB.loadData(null);
         LoadStagingToDW.loadDataFromStgToDW();
 
+
     }
 }

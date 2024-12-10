@@ -9,6 +9,7 @@ import java.io.*;
 public class Connections {
     private static JSONObject fileConfig;
     private static Jdbi controlJDBI, stagingJDBI, dwJDBI;
+    // Đọc dữ liệu từ file config
     public static void loadFileConfig(){
         try{
             if(fileConfig ==null){
