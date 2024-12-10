@@ -8,7 +8,7 @@ import java.io.*;
 
 public class Connections {
     private static JSONObject fileConfig;
-    private static Jdbi controlJDBI, stagingJDBI, dwJDBI;
+    private static Jdbi controlJDBI, stagingJDBI, dwJDBI, dmJDBI;
     // Đọc dữ liệu từ file config
     public static void loadFileConfig(){
         try{
@@ -41,6 +41,24 @@ public class Connections {
             throw new RuntimeException(e);
         }
     return controlJDBI;
+    }
+
+    public static Jdbi getDMJDBI(){
+        try {
+            loadFileConfig();
+            if(dmJDBI == null ){
+                JSONObject jsonControl = fileConfig.getJSONObject("data_mart");
+//        System.out.println(jsonControl.getString("ip"));
+                String dbConnect = String.format("jdbc:mysql://%s:%s/%s", jsonControl.getString("ip"),
+                        jsonControl.getInt("port"), jsonControl.getString("dbname"));
+                dmJDBI = Jdbi.create(dbConnect, jsonControl.getString("username"),
+                        jsonControl.getString("password"));
+                dmJDBI.installPlugin(new SqlObjectPlugin());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return dmJDBI;
     }
     public static Jdbi getStagingJDBI(){
 
